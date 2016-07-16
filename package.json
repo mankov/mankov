@@ -1,0 +1,33 @@
+{
+  "name": "mankov",
+  "version": "0.0.1",
+  "description": "Telegram bot core",
+  "main": "src/server.js",
+  "engine": {
+    "node": "6.2.2"
+  },
+  "scripts": {
+    "test": "npm test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mankov/core.git"
+  },
+  "keywords": [
+    "telegram",
+    "bot",
+    "skeleton"
+  ],
+  "author": "Antti Kivimäki <majoriz11@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/mankov/core/issues"
+  },
+  "homepage": "https://github.com/mankov/core#readme",
+  "devDependencies": {
+    "eslint": "^3.1.0",
+    "eslint-config-airbnb-base": "^4.0.2",
+    "eslint-plugin-import": "^1.10.3",
+    "eslint-plugin-mocha": "^4.0.0"
+  }
+}
