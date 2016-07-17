@@ -5,49 +5,50 @@
 //  are handled only once.
 //
 // TODO:
-//  - this should also be converted to ES6-class if that's what we are going to use?
 //    Current implementation does not work if this module is used in paraller simultaneously
 //
 
-module.exports = {
+module.exports = class Queue {
 
-  queueSize: 15, // how many message id's will be stored
-  queue: [], // array of previous messages
-  inProgress: {}, // messages currently in "progress"
-  messageCounter: 0, // messages succesfully handled
-
+  constructor() {
+    this._queueSize = 15; // how many message id's will be stored
+    this._queue = []; // array of previous messages
+    this._inProgress = {}; // messages currently in "progress"
+    this._messageCounter = 0; // messages succesfully handled
+  }
 
   // marks the message to be "in progress", returns false if this message
   // is already in progress or has already been parsed
   startProcessingMsg(updateId) {
-    if (this.queue.indexOf(updateId) >= 0) {
+    if (this._queue.indexOf(updateId) >= 0) {
       // this message has already been parsed
       return false;
-    } else if (this.inProgress[updateId]) {
+    } else if (this._inProgress[updateId]) {
       // message is already in progress, abort
       return false;
     } else {
-      this.inProgress[updateId] = true;
+      this._inProgress[updateId] = true;
       return true;
     }
-  },
+  }
 
   messageProcessingFailed(updateId) {
-    delete this.inProgress[updateId];
-  },
+    delete this._inProgress[updateId];
+  }
 
   messageProcessed(updateId) {
-    delete this.inProgress[updateId];
+    delete this._inProgress[updateId];
 
-    this.queue.push(updateId);
-    if (this.queue.length > this.queueSize) {
-      this.queue.shift();
+    this._queue.push(updateId);
+    if (this._queue.length > this._queueSize) {
+      this._queue.shift();
     }
 
-    this.messageCounter++;
-  },
+    this._messageCounter++;
+  }
 
   getEventCount() {
-    return this.messageCounter;
+    return this._messageCounter;
   }
+
 };
