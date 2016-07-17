@@ -25,6 +25,7 @@
   },
   "homepage": "https://github.com/mankov/core#readme",
   "devDependencies": {
+    "chai": "^3.5.0",
     "eslint": "^3.1.0",
     "eslint-config-airbnb-base": "^4.0.2",
     "eslint-plugin-import": "^1.10.3",
