@@ -39,5 +39,6 @@ jspm_packages
 # sftp-config
 sftp-config.json
 
-# sublime workspace
+# Sublime-related things
 *.sublime-workspace
+*.sublime-project
