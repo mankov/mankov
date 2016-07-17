@@ -1,32 +1,45 @@
-const cfg     = require('./config');
-const request = require('request');
-const stream  = require('stream');
+// # telegram-api
+//
+//  Functions for interacting with the Telegram's bot API
+//
+//
+// TODO:
+//  - use some request-library which uses Promises so we don't
+//    need to to this callback nonsense anymore
+//
+//  - that errorMsg defining which is done n time should be a function
+
 const fs      = require('fs');
-const mime    = require('mime');
 const path    = require('path');
 const Promise = require('bluebird');
 const _       = require('lodash');
-const logger  = require('./logger');
+const request = require('request');
+const stream  = require('stream');
+const mime    = require('mime');
 
-var botApi = {};
+const log     = require('./logger');
+const cfg     = require('./config');
+
+
+let botApi = {};
 
 // ## Public functions
 //
 
-botApi.getMe = () => {
-  return new Promise((resolve, reject) => {
-    request(cfg.tgApiUrl + '/getMe', (err, res, body) => {
-      if (!err && JSON.parse(body).ok) {
-        resolve(JSON.parse(body).result);
-      } else {
-        var errmsg = (err) ? ('Telegram API unreachable: ' + err) :
-        ('botApi: error when getMe: ' + JSON.parse(body).description);
-        logger.log('error', errmsg);
-        reject(errmsg);
-      }
-    });
+botApi.getMe = () => new Promise((resolve, reject) => {
+  request(`${cfg.tgApiUrl}/getMe`, (err, res, body) => {
+    if (!err && JSON.parse(body).ok) {
+      resolve(JSON.parse(body).result);
+    } else {
+      const errorMsg = err
+        ? `Telegram API unreachable: ${err}`
+        : `Error on getMe: ${JSON.parse(body).description}`;
+
+      log.error(errorMsg);
+      reject(errorMsg);
+    }
   });
-};
+});
 
 // chat_id [int] REQUIRED
 // text [string] REQUIRED
@@ -35,64 +48,65 @@ botApi.getMe = () => {
 // disable_notification [boolean] OPTIONAL
 // reply_to_message_id [int] OPTIONAL
 // reply_markup [ReplyKeyboardMarkup, ReplyKeyboardHide or ForeReply] OPTIONAL
-botApi.sendMessage = (options) => {
-  return new Promise(resolve => {
+botApi.sendMessage = (options) => new Promise(resolve => {
 
-    options.hide_keyboard = (_.isUndefined(options.reply_markup));
+  options.hide_keyboard = (_.isUndefined(options.reply_markup));
 
-    // Send the message to Telegram API
-    request.post(
-      cfg.tgApiUrl + '/sendMessage',
-      { form: options },
-      function requestCallback(err, resp, body) {
-        if (!err && JSON.parse(body).ok) {
-          logger.info(
-            'botApi: sending message to %s: "%s..."',
-            options.chat_id,
-            _.truncate(options.text)
-            );
-          resolve(body);
-        } else {
-          var errmsg = (err) ? ('Telegram API unreachable: ' + err) :
-          ('botApi: error when sending message: ' + JSON.parse(body).description);
-          logger.log('error', errmsg);
-          resolve(errmsg);
-        }
+  // Send the message to Telegram API
+  request.post(
+    `${cfg.tgApiUrl}/sendMessage`,
+    { form: options },
+    function messageSendCallback(err, resp, body) {
+      if (!err && JSON.parse(body).ok) {
+        log.info(
+          'botApi: sending message to %s: "%s..."',
+          options.chat_id,
+          _.truncate(options.text)
+        );
+
+        resolve(body);
+      } else {
+        const errMsg = (err)
+          ? `Telegram API unreachable: ${err}`
+          : `Error when sending message: ${JSON.parse(body).description}`;
+
+        log.error(errMsg);
+        resolve(errMsg);
       }
-    );
-  });
-};
+    }
+  );
+});
 
 // chat_id [int or string] REQUIRED
 // from_chat_id [int or string] REQUIRED
 // disable_notification [boolean] OPTIONAL
 // message_id [int] REQUIRED
-botApi.forwardMessage = (options) => {
-  return new Promise(resolve => {
-    request.post(
-      cfg.tgApiUrl + '/forwardMessage',
-      { form: options },
-      function requestCallback(err, resp, body) {
-        if (!err && JSON.parse(body).ok) {
-          logger.log('info', 'botApi: forwarded message to %s', options.chat_id);
-          resolve(body);
-        } else {
-          var errmsg = (err) ? ('Telegram API unreachable: ' + err) :
-          ('botApi: error when forwarding message: ' + JSON.parse(body).description);
-          logger.log('error', errmsg);
-          resolve(errmsg);
-        }
+botApi.forwardMessage = (options) => new Promise(resolve => {
+  request.post(
+    `${cfg.tgApiUrl}/forwardMessage`,
+    { form: options },
+    function messageForwardCallback(err, resp, body) {
+      if (!err && JSON.parse(body).ok) {
+        log.info('botApi: forwarded message to %s', options.chat_id);
+        resolve(body);
+      } else {
+        let errorMsg = (err)
+          ? `Telegram API unreachable: ${err}`
+          : `Error when forwarding message:${JSON.parse(body).description}`;
+
+        log.error(errorMsg);
+        resolve(errorMsg);
       }
-      );
-  });
-};
+    }
+  );
+});
 
 // chat_id [int or string] REQUIRED
 // action ['typing' or 'upload_photo' or 'record_video' or
 //        'upload_video' or 'record_video' or 'upload_audio' or
 //        'upload_document' or 'find_location'] REQUIRED
 botApi.sendAction = (options) => {
-  request.post(cfg.tgApiUrl + '/sendChatAction', { form: options });
+  request.post(`${cfg.tgApiUrl}/sendChatAction`, { form: options });
 };
 
 // chat_id [int or string] REQUIRED
@@ -100,9 +114,8 @@ botApi.sendAction = (options) => {
 // disable_notification [boolean] OPTIONAL
 // reply_to_message_id [int] OPTIONAL
 // reply_markup [ReplyKeyboardMarkup or ReplyKeyboardHide or ForceReply] OPTIONAL
-botApi.sendSticker = (options) => {
-  return _sendFile('sticker', options);
-};
+botApi.sendSticker = (options) => sendFile('sticker', options);
+
 
 // chat_id [int or string] REQUIRED
 // file [file_location or file_id] REQUIRED
@@ -113,9 +126,8 @@ botApi.sendSticker = (options) => {
 // disable_notification [boolean] OPTIONAL
 // reply_to_message_id [int] OPTIONAL
 // reply_markup [ReplyKeyboardMarkup or ReplyKeyboardHide or ForceReply] OPTIONAL
-botApi.sendVideo = (options) => {
-  return _sendFile('video', options);
-};
+botApi.sendVideo = (options) => sendFile('video', options);
+
 
 // chat_id [int or string] REQUIRED
 // file [file_location or file_id] REQUIRED
@@ -123,74 +135,84 @@ botApi.sendVideo = (options) => {
 // disable_notification [boolean] OPTIONAL
 // reply_to_message_id [int] OPTIONAL
 // reply_markup [ReplyKeyboardMarkup or ReplyKeyboardHide or ForceReply] OPTIONAL
-botApi.sendPhoto = (options) => {
-  return _sendFile('photo', options);
-};
+botApi.sendPhoto = (options) => sendFile('photo', options);
+
 
 // url [string] REQUIRED
 // certificate [file_location] OPTIONAL
-botApi.setWebhook = (options) => {
-  return new Promise((resolve, reject) => {
-    // Delete old webhook
-    let payload = { form: { url: '' } };
-    request.post(cfg.tgApiUrl + '/setWebhook', payload, (err, response, body) => {
-      if (err) {
-        logger.error('Telegram API unreachable: ', err);
-      } else {
-        logger.debug('botApi: previous webhook deleted, response: ' + body);
+botApi.setWebhook = (options) => new Promise((resolve, reject) => {
+  // TODO/NOTE: is deleting the old webhook required? I guess it is since it
+  // is done in here, but is it really?
 
-        // Subscribe new webhook
-        var formData = '';
-        if (!_.isEmpty(options.certificate)) {
-          formData = _formatSendData('certificate', options.certificate).formData;
-        }
+  // Delete old webhook
+  let payload = { form: { url: '' } };
 
-        request.post(cfg.tgApiUrl + '/setWebhook',
-          { qs: options, formData: formData },
-            (err, response, body) => { // TODO we shouldn't be cascading these requests
-            if (!err && JSON.parse(body).ok) {
-              logger.info('botApi: webhook updated successfully!');
-              logger.debug('botApi: webhook response' + body);
-              resolve();
-            }
-            else {
-              var errmsg = (err)
-              ? 'Telegram API unreachable: ' + err
-              : 'Error when setting webhook: ' + JSON.parse(body).description;
-              logger.error(errmsg);
-              reject(errmsg);
-            }
-          }
-        );
+  request.post(`${cfg.tgApiUrl}/setWebhook`, payload, (err, response, body) => {
+    if (err) {
+      log.error('Telegram API unreachable: ', err);
+    } else {
+      log.debug(`Previous webhook deleted, response: ${body}`);
+
+      // Subscribe new webhook
+      let formData = '';
+      if (!_.isEmpty(options.certificate)) {
+        formData = formatSendData('certificate', options.certificate).formData;
       }
-    });
+
+      request.post(
+        `${cfg.tgApiUrl}/setWebhook`,
+        { qs: options, formData },
+        function setWebhookCallback(err, response, body) {
+          // TODO we shouldn't be cascading these requests, vars get shadowed etc
+
+          if (!err && JSON.parse(body).ok) {
+            log.info('Webhook updated successfully!');
+            log.debug(`Webhook response: ${body}`);
+            resolve();
+          }
+          else {
+            let errorMsg = (err)
+              ? `Telegram API unreachable: ${err}`
+              : `Error when setting webhook: ${JSON.parse(body).description}`;
+
+            log.error(errorMsg);
+            reject(errorMsg);
+          }
+        }
+      );
+    }
   });
-};
+});
+
 
 // file_id [string] REQUIRED
-botApi.getFile = (options) => {
-  return new Promise((resolve, reject) => {
-    request.post(cfg.tgApiUrl + '/getFile', { qs: options }, (err, response, body) => {
+botApi.getFile = (options) => new Promise((resolve, reject) => {
+  request.post(
+    `${cfg.tgApiUrl}/getFile`,
+    { qs: options },
+    function getFileCallback(err, response, body) {
       if (!err && JSON.parse(body).ok) {
         resolve(JSON.parse(body).result);
       } else {
-        var errmsg = (err)
-        ? 'Telegram API unreachable: ' + err
-        : 'botApi: error when getting file: ' + JSON.parse(body).description;
-        logger.error(errmsg);
+        let errmsg = (err)
+          ? `Telegram API unreachable: ${err}`
+          : `Error when getting file: ${JSON.parse(body).description}`;
+
+        log.error(errmsg);
         reject(errmsg);
       }
-    });
-  });
-};
+    }
+  );
+});
+
 
 // ## Internal functions
 //
 
-var _formatSendData = function(type, data) {
-  var formData = {};
-  var fileName;
-  var fileId = data;
+function formatSendData(type, data) {
+  let formData = {};
+  let fileName;
+  let fileId = data;
 
   if (data instanceof stream.Stream) {
     fileName = path.basename(data.path);
@@ -216,33 +238,35 @@ var _formatSendData = function(type, data) {
   }
 
   return {
-    formData: formData,
+    formData,
     file: fileId
   };
-};
+}
 
-var _sendFile = function(type, options) {
+function sendFile(type, options) {
   return new Promise((resolve, reject) => {
-    var content = _formatSendData(type, options.file);
+    let content = formatSendData(type, options.file);
     options[type] = content.file;
 
     request.post(
-      cfg.tgApiUrl + '/send' + _.camelCase(type),
+      `${cfg.tgApiUrl}/send${_.camelCase(type)}`,
       { qs: options, formData: content.formData },
-      function callback(err, httpResponse, body) {
+      function sendFileCallback(err, httpResponse, body) {
         if (!err && JSON.parse(body).ok) {
-          logger.log('info', 'botApi: sent ' + type + ' to ' + options.chat_id);
+          log.info(`botApi: sent ${type} to ${options.chat_id}`);
           resolve();
         } else {
-          var errmsg = (err) ? ('Telegram API unreachable: ' + err) :
-          ('botApi: error when sending' + type + ': ' + JSON.parse(body).description);
-          logger.log('error', errmsg);
-          reject(errmsg);
+          let errorMsg = (err)
+            ? `Telegram API unreachable: ${err}`
+            : `Error when sending ${type}:  ${JSON.parse(body).description}`;
+
+          log.error(errorMsg);
+          reject(errorMsg);
         }
       }
-      );
+    );
   });
-};
+}
 
 
 module.exports = botApi;
