@@ -1,15 +1,14 @@
-/* eslint-disable no-unused-vars */
-// ^ this is disabled since express error handlers must announce
-//   all the required parameters in order to work, and it mismatches
-//   with that rule
-
 const express     = require('express');
 const bodyParser  = require('body-parser');
-const _           = require('lodash');
-const logger      = require('./logger')('../log.out');
+
+const log      = require('./logger')(__filename);
+
+const DEFAULT_ADDRESS = 'localhost';
+const DEFAULT_PORT = 3000;
+
 
 module.exports = class Core {
-  constructor(port = 3000, address = 'localhost') {
+  constructor(port = DEFAULT_PORT, address = DEFAULT_ADDRESS) {
     this._tgApiKey = null;
     this._webhookUrl = null;
     this._port = port;
@@ -21,16 +20,16 @@ module.exports = class Core {
 
     // # Start the server
     this._server.listen(this._port, this._address, () => {
-      logger.log('info', 'Mankov-core started at ' + this._address + ':' + this._port);
+      log.info(`Mankov started at ${this._address}:${this._port}`);
     });
   }
 
-  subscribeWebhook(url, cb) {
+  subscribeWebhook(url, callback) {
     if (!this._webhookUrl) {
       this._webhookUrl = url;
-      this._server.post(url, (req,res) => {
-        cb(req);
+      this._server.post(url, (req, res) => {
+        callback(req);
       });
     }
   }
-}
+};
