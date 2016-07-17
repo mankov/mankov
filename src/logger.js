@@ -5,12 +5,13 @@ const _       = require('lodash');
 const COLORIZE = process.env.NODE_ENV === 'development';
 
 function createLogger(filePath) {
-  var fileName = path.basename(filePath);
+  const fileName = path.basename(filePath);
+  const label = `mankov${fileName ? '-' + fileName : ''}`;
 
   const logger = new winston.Logger({
     transports: [new winston.transports.Console({
       colorize: COLORIZE,
-      label: fileName,
+      label,
       timestamp: true
     })]
   });
@@ -20,7 +21,7 @@ function createLogger(filePath) {
 }
 
 function _setLevelForTransports(logger, level) {
-  _.each(logger.transports, function(transport) {
+  _.each(logger.transports, transport => {
     transport.level = level;
   });
 }
