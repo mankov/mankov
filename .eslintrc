@@ -48,13 +48,7 @@
 
     // rules disabled from airbnb config since they don't match our previous
     // coding style at all
-    "camelcase": 0,
-    "func-names": 0,
-    "no-var": 0,
-    "object-shorthand": 0,
     "no-multi-spaces": ["error", { exceptions: { "VariableDeclarator": true, "Property": true } }],
     "brace-style": 0,
-    "prefer-template": 0,
-    "vars-on-top": 0
   }
 }
