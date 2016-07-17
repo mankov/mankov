@@ -58,13 +58,9 @@ botApi.sendMessage = (options) => new Promise(resolve => {
     { form: options },
     function messageSendCallback(err, resp, body) {
       if (!err && JSON.parse(body).ok) {
-        log.info(
-          'botApi: sending message to %s: "%s..."',
-          options.chat_id,
-          _.truncate(options.text)
-        );
-
+        log.info(`botApi: sending message to ${options.chat_id}: "${_.truncate(options.text)}..."`);
         resolve(body);
+
       } else {
         const errMsg = (err)
           ? `Telegram API unreachable: ${err}`
@@ -87,8 +83,9 @@ botApi.forwardMessage = (options) => new Promise(resolve => {
     { form: options },
     function messageForwardCallback(err, resp, body) {
       if (!err && JSON.parse(body).ok) {
-        log.info('botApi: forwarded message to %s', options.chat_id);
+        log.info(`botApi: forwarded message to ${options.chat_id}`);
         resolve(body);
+
       } else {
         let errorMsg = (err)
           ? `Telegram API unreachable: ${err}`
@@ -149,7 +146,7 @@ botApi.setWebhook = (options) => new Promise((resolve, reject) => {
 
   request.post(`${cfg.tgApiUrl}/setWebhook`, payload, (err, response, body) => {
     if (err) {
-      log.error('Telegram API unreachable: ', err);
+      log.error(`Telegram API unreachable: ${err}`);
     } else {
       log.debug(`Previous webhook deleted, response: ${body}`);
 

@@ -19,6 +19,7 @@ module.exports = class Core {
   }
 
   subscribeWebhook(url, callback) {
+    // TODO: remove existing webhook when creating a new one
     if (!this._webhookUrl) {
       this._webhookUrl = url;
       this._server.post(url, (req, res) => {
