@@ -38,7 +38,7 @@ function startHttpServer(port, hostname) {
 
   // Start!
   server.listen(port, hostname, () => {
-    log.info(`HTTP-server started at ${this._hostname}:${this._port}`);
+    log.info(`HTTP-server started at ${hostname}:${port}`);
   });
 
   return server;
