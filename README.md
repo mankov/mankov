@@ -15,7 +15,7 @@ Basic concept of Telegram Bot is quite simple. You subscribe to Telegram's Bot A
 
 In _Mankov-powered bot_ there is a _Pipeline_ where all those Telegram-sent messages are processed. All the messages are parsed by the `telegram-parser` which maps the information into more readable & flexible format. We call this format as an _Event_.
 
-![Mankov Pipeline](docs/pipeline.svg)
+![Mankov Pipeline](docs/pipeline.png)
 
 In the Pipeline there are three different kind of Event handlers:
 
