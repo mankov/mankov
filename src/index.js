@@ -1,11 +1,10 @@
 const Promise     = require('bluebird');
 const _           = require('lodash');
-const express     = require('express');
-const bodyParser  = require('body-parser');
 
 const telegramApi = require('./telegram-api');
 const telegramParser = require('./telegram-parser');
 
+const httpServer = require('./http-server');
 const log      = require('./logger')(__filename);
 
 const DEFAULT_HOSTNAME = 'localhost';
@@ -24,7 +23,9 @@ class Core {
     this._commanders = [];
     this._responders = [];
 
-    this._server = startHttpServer(port, hostname);
+
+    // HTTP-server
+    this._server = httpServer(port, hostname);
 
   }
 
@@ -106,23 +107,6 @@ class Core {
 
     });
   }
-}
-
-
-// TODO: move this to own file?
-function startHttpServer(port, hostname) {
-  const server = express();
-
-  // Add required middlewares
-  server.use(bodyParser.urlencoded({ extended: false }));
-  server.use(bodyParser.json());
-
-  // Start!
-  server.listen(port, hostname, () => {
-    log.info(`HTTP-server started at ${hostname}:${port}`);
-  });
-
-  return server;
 }
 
 
