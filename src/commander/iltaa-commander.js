@@ -12,11 +12,10 @@ class IltaaCmdr {
   // Must always return a Promise.
   getBidForEvent(event) {
     if (event.rawInput.indexOf('/iltaa') > 0) {
-      return Promise.resolve({
-        interested: true
-      });
+      return Promise.resolve();
+
     } else {
-      return Promise.resolve({});
+      return Promise.reject();
     }
   }
 }

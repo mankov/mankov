@@ -15,7 +15,7 @@ const DEFAULT_PORT = 3000;
 class Core {
   constructor(port = DEFAULT_PORT, hostname = DEFAULT_HOSTNAME) {
 
-    this._tgApi = null;
+    this._apis = [];
     this._webhookUrl = null;
     this._port = port;
     this._hostname = hostname;
@@ -28,12 +28,11 @@ class Core {
 
   }
 
-  // NOTE: Should API key be mandatory parameter in constructor?
   setTelegramApiKey(apiKey) {
-    this._tgApi = new telegramApi(apiKey);
+    this._apis.push({ name: 'telegram', api: new telegramApi(apiKey) });
   }
 
-  subscribeWebhook(url, certificate, callback) {
+  subscribeWebhook(options, callback) {
     // TODO: remove existing webhook when creating a new one
     if (!this._webhookUrl) {
       this._webhookUrl = url;
@@ -42,28 +41,32 @@ class Core {
         callback(req);
       });
 
-      // If Telegram API is initialized, send webhook also to Telegram
-      if (this._tgApi) {
-        this._tgApi.setWebhook({ url, certificate });
-      }
+      // Set webhook also to API if it is supported
+      this._apis.forEach(api => {
+        if (_.isFunction(api.setWebhook)) {
+          api.setWebhook(options);
+        }
+      });
     }
   }
 
   addCommander(commanderInstance) {
-    this._monitors.push(commanderInstance);
+    this._commanders.push(commanderInstance);
   }
 
   // "The Pipeline"
   processMessage(message) {
     // TODO: call queue
 
+    // TODO: Support multiple chat platforms
+    //       (Check from which API message came from)
     const event = telegramParser(message);
 
-    // TODO: send to all monitors
+    // TODO: send event to all monitors
 
 
     // # Command & Respond -loop
-    const commandHandlerCandidates = _.map(this_.commanders, cmdr =>
+    const commandHandlerCandidates = _.map(this._commanders, cmdr =>
       cmdr.getBidForEvent(event)
     );
 
@@ -74,15 +77,26 @@ class Core {
         .filter(promise => promise.isFulfilled())
     ).then(handlerBids => {
       // only fulfilled promises in here.
-      console.log(handlerBids);
+      log.debug(handlerBids);
 
-      // TODO: decide about the bids which will be sent
-      // for actual handling
+      // One commander was interested in the event,
+      // allow that commander to decide the response
+      if (handlerBids.length === 1) {
+          // TODO: Run commander's `process` function
+      }
 
-      // TODO: if there was no interested commanders, send
-      // the event to responders
+      // More than one commander was interested in the event,
+      // tell user about this conflict
+      else if (handlerBids.length > 1) {
+          // TODO: Make user to decide which commander will take the control
+      }
+
+      // There was no interested commanders, send event to responders
+      else {
+          // TODO: Create responder logic
+      }
+
     });
-
   }
 }
 
