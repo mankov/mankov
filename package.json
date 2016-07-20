@@ -1,7 +1,7 @@
 {
   "name": "mankov",
   "version": "0.0.1",
-  "description": "Telegram bot core",
+  "description": "Framework for Chat Bots",
   "main": "src/server.js",
   "engine": {
     "node": "6.2.2"
