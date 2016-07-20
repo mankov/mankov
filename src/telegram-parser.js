@@ -12,6 +12,7 @@ module.exports = function parseTelegramEvent(msg) {
   // # Parse the message into "event"-object which is passed forward
   let event = {};
 
+  event.origin = 'telegram';
 
   // Map data from Telegram message
   event.rawInput = msg.text;
