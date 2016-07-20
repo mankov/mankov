@@ -27,17 +27,17 @@ module.exports = class BotApi {
   }
 
   getMe() {
-    return new Promise((resolve, reject) => {
+    return (
       request
       .get(`${this._tgApiUrl}/getMe`)
-      .then((err, res) => {
-        if (!err && JSON.parse(res.body).ok) {
-          return resolve(JSON.parse(res.body).result);
+      .then((res, err) => {
+        if (!err && res.body.ok) {
+          return Promise.resolve(res.body.result);
         } else {
           return this._generateErrorMsg(err, res);
         }
-      });
-    });
+      })
+    );
   }
 
   // chat_id [int] REQUIRED
@@ -48,26 +48,25 @@ module.exports = class BotApi {
   // reply_to_message_id [int] OPTIONAL
   // reply_markup [ReplyKeyboardMarkup, ReplyKeyboardHide or ForeReply] OPTIONAL
   sendMessage(options) {
-    return new Promise(resolve => {
 
-      options.hide_keyboard = (_.isUndefined(options.reply_markup));
+    options.hide_keyboard = (_.isUndefined(options.reply_markup));
 
-      request
+    return (request
       .post(`${this._tgApiUrl}/sendMessage`)
       .send(options)
-      .then((err, res) => {
-        if (!err && JSON.parse(res.body).ok) {
-          log.info(
+      .then((res, err) => {
+        if (!err && res.body.ok) {
+          log.debug(
             `botApi: sending message to
             ${options.chat_id}: "${_.truncate(options.text)}..."`
           );
-          return resolve(res.body);
+          return Promise.resolve(res.body);
 
         } else {
           return this._generateErrorMsg(err, res);
         }
-      });
-    });
+      })
+    );
   }
 
   // chat_id [int or string] REQUIRED
@@ -76,20 +75,20 @@ module.exports = class BotApi {
   // message_id [int] REQUIRED
   forwardMessage(options) {
 
-    return new Promise(resolve => {
+    return (
       request
       .post(`${this._tgApiUrl}/forwardMessage`)
       .send(options)
-      .then((err, res) => {
-        if (!err && JSON.parse(res.body).ok) {
-          log.info(`botApi: forwarded message to ${options.chat_id}`);
-          return resolve(res.body);
+      .then((res, err) => {
+        if (!err && res.body.ok) {
+          log.debug(`botApi: forwarded message to ${options.chat_id}`);
+          return Promise.resolve(res.body);
 
         } else {
           return this._generateErrorMsg(err, res);
         }
-      });
-    });
+      })
+    );
   }
 
   // chat_id [int or string] REQUIRED
@@ -97,9 +96,20 @@ module.exports = class BotApi {
   //        'upload_video' or 'record_video' or 'upload_audio' or
   //        'upload_document' or 'find_location'] REQUIRED
   sendAction(options) {
-    request
-    .post(`${this._tgApiUrl}/sendChatAction`)
-    .send(options);
+    return (
+      request
+      .post(`${this._tgApiUrl}/sendChatAction`)
+      .send(options)
+      .then((res, err) => {
+        if (!err && res.body.ok) {
+          log.debug(`botApi: sent action to ${options.chat_id}`);
+          return Promise.resolve(res.body);
+
+        } else {
+          return this._generateErrorMsg(err, res);
+        }
+      })
+    );
   }
 
   // chat_id [int or string] REQUIRED
@@ -145,7 +155,7 @@ module.exports = class BotApi {
       request
       .post(`${this._tgApiUrl}/setWebhook`)
       .send({ url: '' })
-      .then((err, res) => {
+      .then((res, err) => {
         if (err) {
           log.error(`Telegram API unreachable: ${err}`);
           return Promise.resolve();
@@ -154,26 +164,24 @@ module.exports = class BotApi {
           return Promise.reject();
         }
       })
-      .then(() => {
-
-        // Subscribe new webhook
+      .then(
         request
         .post(`${this._tgApiUrl}/setWebhook`)
         .set('Content-Type', 'multipart/form-data')
         .send(options)
         .attach('certificate', options.certificate)
-        .then((err, res) => {
+        .then((res, err) => {
 
           if (!err && JSON.parse(res.body).ok) {
-            log.info('Webhook updated successfully!');
+            log.debug('Webhook updated successfully!');
             log.debug(`Webhook response: ${res.body}`);
             return Promise.resolve();
           }
           else {
             return this._generateErrorMsg(err, res);
           }
-        });
-      })
+        })
+      )
       .then(resolve);
     });
   }
@@ -185,7 +193,7 @@ module.exports = class BotApi {
       request
       .post(`${this._tgApiUrl}/getFile`)
       .send(options)
-      .then((err, res) => {
+      .then((res, err) => {
         if (!err && JSON.parse(res.body).ok) {
           return resolve(JSON.parse(res.body).result);
         } else {
@@ -204,9 +212,9 @@ module.exports = class BotApi {
       .set('Content-Type', 'multipart/form-data')
       .send(options)
       .attach(type, options.file)
-      .then((err, res) => {
+      .then((res, err) => {
         if (!err && JSON.parse(res.body).ok) {
-          log.info(`botApi: sent ${type} to ${options.chat_id}`);
+          log.debug(`botApi: sent ${type} to ${options.chat_id}`);
           return resolve();
         } else {
           return this._generateErrorMsg(err, res);
@@ -216,7 +224,7 @@ module.exports = class BotApi {
     });
   }
 
-  static _generateErrorMsg(apiErr, res) {
+  _generateErrorMsg(apiErr, res) {
     let errmsg = (apiErr)
       ? `Telegram API unreachable: ${apiErr}`
       : `Error from Telegram API: ${JSON.parse(res.body).description}`;
