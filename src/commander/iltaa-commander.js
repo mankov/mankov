@@ -17,7 +17,8 @@ class IltaaCmdr {
     ) {
       return Promise.resolve({
         interested: true,
-        description: 'Iltuilee käyttäjälle'
+        description: 'Iltuilee käyttäjälle',
+        commander: this
       });
     } else {
       return Promise.reject();
