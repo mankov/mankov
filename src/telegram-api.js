@@ -15,7 +15,7 @@ const request = require('superagent');
 
 const log     = require('./logger')(__filename);
 
-module.exports = class BotApi {
+module.exports = class TelegramApi {
 
   constructor(apiKey) {
 
@@ -148,86 +148,74 @@ module.exports = class BotApi {
   // url [string] REQUIRED
   // certificate [file_location] OPTIONAL
   setWebhook(options) {
-    return new Promise((resolve, reject) => {
       // TODO/NOTE: is deleting the old webhook required? I guess it is since it
       // is done in here, but is it really?
 
+    request
+    .post(`${this._tgApiUrl}/setWebhook`)
+    .send({ url: '' })
+    .then((res, err) => {
+      if (!err && res.body.ok) {
+        log.debug(`Previous webhook deleted, response: ${res.body}`);
+        return Promise.reject();
+      } else {
+        return this._generateErrorMsg(err, res);
+      }
+    })
+    .then(
       request
       .post(`${this._tgApiUrl}/setWebhook`)
-      .send({ url: '' })
+      .set('Content-Type', 'multipart/form-data')
+      .send(options)
+      .attach('certificate', options.certificate)
       .then((res, err) => {
-        if (err) {
-          log.error(`Telegram API unreachable: ${err}`);
-          return Promise.resolve();
-        } else {
-          log.debug(`Previous webhook deleted, response: ${res.body}`);
-          return Promise.reject();
+
+        if (!err && res.body.ok) {
+          log.debug(`Webhook updated successfully, response: ${res.body}`);
+          return Promise.resolve(res.body.result);
+        }
+        else {
+          return this._generateErrorMsg(err, res);
         }
       })
-      .then(
-        request
-        .post(`${this._tgApiUrl}/setWebhook`)
-        .set('Content-Type', 'multipart/form-data')
-        .send(options)
-        .attach('certificate', options.certificate)
-        .then((res, err) => {
-
-          if (!err && JSON.parse(res.body).ok) {
-            log.debug('Webhook updated successfully!');
-            log.debug(`Webhook response: ${res.body}`);
-            return Promise.resolve();
-          }
-          else {
-            return this._generateErrorMsg(err, res);
-          }
-        })
-      )
-      .then(resolve);
-    });
+    );
   }
 
 
   // file_id [string] REQUIRED
   getFile(options) {
-    return new Promise((resolve, reject) => {
-      request
-      .post(`${this._tgApiUrl}/getFile`)
-      .send(options)
-      .then((res, err) => {
-        if (!err && JSON.parse(res.body).ok) {
-          return resolve(JSON.parse(res.body).result);
-        } else {
-          return this._generateErrorMsg(err, res);
-        }
-      })
-      .then(resolve);
+    request
+    .post(`${this._tgApiUrl}/getFile`)
+    .send(options)
+    .then((res, err) => {
+      if (!err && res.body.ok) {
+        return Promise.resolve(res.body.result);
+      } else {
+        return this._generateErrorMsg(err, res);
+      }
     });
   }
 
   _sendFile(type, options) {
-    return new Promise((resolve, reject) => {
-
-      request
-      .post(`${this._tgApiUrl}/send${_.camelCase(type)}`)
-      .set('Content-Type', 'multipart/form-data')
-      .send(options)
-      .attach(type, options.file)
-      .then((res, err) => {
-        if (!err && JSON.parse(res.body).ok) {
-          log.debug(`botApi: sent ${type} to ${options.chat_id}`);
-          return resolve();
-        } else {
-          return this._generateErrorMsg(err, res);
-        }
-      })
-      .then(resolve);
+    request
+    .post(`${this._tgApiUrl}/send${_.camelCase(type)}`)
+    .set('Content-Type', 'multipart/form-data')
+    .send(options)
+    .attach(type, options.file)
+    .then((res, err) => {
+      if (!err && res.body.ok) {
+        log.debug(`botApi: sent ${type} to ${options.chat_id}`);
+        return Promise.resolve(res.body.result);
+      } else {
+        return this._generateErrorMsg(err, res);
+      }
     });
   }
 
   _generateErrorMsg(apiErr, res) {
     let errmsg = (apiErr)
       ? `Telegram API unreachable: ${apiErr}`
-      : `Error from Telegram API: ${JSON.parse(res.body).description}`;
+      : `Error from Telegram API: ${res.body.description}`;
     log.error(errmsg);
     return Promise.reject(errmsg);
   }
