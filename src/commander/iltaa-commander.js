@@ -5,6 +5,10 @@ const Promise = require('bluebird');
 
 class IltaaCmdr {
 
+  constructor() {
+    this._iltaaCount = 0;
+  }
+
   // # getBidForEvent
   // returns "bid" for event, intenting is this commander
   // willing to handle this event or not.
@@ -26,7 +30,16 @@ class IltaaCmdr {
   }
 
   handleEvent(event) {
+    console.log('Doing something');
+    this._iltaaCount += 1;
 
+    // Return an "Intent"-object
+    // (TODO: we need to think about this format)
+    return Promise.resolve({
+      action: 'sendMessage',
+      targetId: event.replyTarget,
+      text: 'Game of Iltuz'
+    });
   }
 
 }
