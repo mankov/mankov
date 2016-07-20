@@ -11,13 +11,23 @@ class IltaaCmdr {
   //
   // Must always return a Promise.
   getBidForEvent(event) {
-    if (event.rawInput.indexOf('/iltaa') > 0) {
-      return Promise.resolve();
-
+    if (event.rawInput
+        .toLowerCase()
+        .indexOf('/iltaa') > 0
+    ) {
+      return Promise.resolve({
+        interested: true,
+        description: 'Iltuilee käyttäjälle'
+      });
     } else {
       return Promise.reject();
     }
   }
+
+  handleEvent(event) {
+
+  }
+
 }
 
 module.exports = IltaaCmdr;

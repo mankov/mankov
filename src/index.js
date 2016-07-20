@@ -60,7 +60,13 @@ class Core {
   }
 
   addCommander(commanderInstance) {
-    this._commanders.push(commanderInstance);
+    if (!_.isFunction(commanderInstance.getBidForEvent)) {
+      log.error('No getBidForEvent defined for', commanderInstance, 'ignoring!');
+    } else if (_.isFunction(commanderInstance.handleEvent)) {
+      log.error('No handleEvent defined for', commanderInstance, 'ignoring!');
+    } else {
+      this._commanders.push(commanderInstance);
+    }
   }
 
   // "The Pipeline"
