@@ -2,8 +2,7 @@
 //
 //  Parses events coming from Telegram webhook into more useful "Mankov Event"-object
 
-const Promise     = require('bluebird');
-const _           = require('lodash');
+const _ = require('lodash');
 
 const log = require('./logger')(__filename);
 
@@ -13,12 +12,6 @@ module.exports = function parseTelegramEvent(msg) {
   // # Parse the message into "event"-object which is passed forward
   let event = {};
 
-  if (!msg.text) {
-    log.debug('No text on event, ignore');
-    return Promise.resolve();
-  }
-
-  // event.isCommand = isEventCommand(event); // BorisBot legacy
 
   // Map data from Telegram message
   event.rawInput = msg.text;
@@ -40,9 +33,6 @@ module.exports = function parseTelegramEvent(msg) {
 
   event.editDate = (msg.edit_date) ? msg.edit_date : null;
   event.entities = (msg.entities) ? msg.entities : null;
-
-
-  // In BorisBot at this point it is checked if user is banned or not
 
 
   // Parse command & possible parameters
