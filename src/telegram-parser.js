@@ -32,6 +32,9 @@ module.exports = function parseTelegramEvent(msg) {
   event.chatGroupId = event.isFromGroup ? msg.chat.id : null;
   event.chatGroupTitle = event.isFromGroup ? msg.chat.title : null;
 
+  // TODO: think about naming of this attr
+  event.replyTarget = event.isFromGroup ? event.chatGroupid : event.userId;
+
   event.editDate = (msg.edit_date) ? msg.edit_date : null;
   event.entities = (msg.entities) ? msg.entities : null;
 
