@@ -28,6 +28,11 @@ class Core {
 
   }
 
+  // Use this if you don't want to use "new" keyword
+  static create(port, hostname) {
+    return new Core(port, hostname);
+  }
+
   setTelegramApiKey(apiKey) {
     this._apis.push({ name: 'telegram', api: new telegramApi(apiKey) });
   }
@@ -35,10 +40,13 @@ class Core {
   subscribeWebhook(options, callback) {
     // TODO: remove existing webhook when creating a new one
     if (!this._webhookUrl) {
-      this._webhookUrl = url;
+      this._webhookUrl = options.url;
 
-      this._server.post(url, req => {
+      this._server.post(options.url, req => {
+
+        // Do the callback when a webhook event is fired
         callback(req);
+
       });
 
       // Set webhook also to API if it is supported

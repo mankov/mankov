@@ -24,7 +24,7 @@ it('sendMessage()', () =>
 );
 
 it('forwardMessage()', () =>
-  expect(api.forwardMessage({ chat_id: options.chatId, from_chat_id: 12345678, message_id: 12345 }))
+  expect(api.forwardMessage({ chat_id: options.chatId, from_chat_id: options.fromChat, message_id: options.forwardMsg }))
   .eventually.be.fulfilled
 );
 
