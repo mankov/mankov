@@ -7,7 +7,8 @@
     "node": "6.2.2"
   },
   "scripts": {
-    "test": "mocha test/test.js"
+    "test": "mocha test/**/*_spec.js",
+    "test:watch": "mocha test/**/*_spec.js --watch"
   },
   "repository": {
     "type": "git",
