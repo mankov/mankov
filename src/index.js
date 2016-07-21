@@ -112,13 +112,12 @@ class Core {
       cmdr.getBidForEvent(event)
     );
 
-    return Promise.all(
-      commandHandlerCandidates
-        // Hack to get only solved promises
-        // (http://stackoverflow.com/questions/30309273/keep-the-values-only-from-the-promises-that-resolve-and-ignore-the-rejected)
-        .map(promise => promise.reflect())
-        .filter(promise => promise.isFulfilled())
-    ).then(function solveHandlerCommander(handlerBids) {
+
+    // Hack to get only solved promises
+    // (http://stackoverflow.com/questions/30309273/keep-the-values-only-from-the-promises-that-resolve-and-ignore-the-rejected)
+    return Promise.all(commandHandlerCandidates.map(promise => promise.reflect()))
+    .filter(promise => promise.isFulfilled())
+    .then(function solveHandlerCommander(handlerBids) {
       let winningBid = null;
 
       if (handlerBids.length > 1) {
