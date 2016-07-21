@@ -34,6 +34,8 @@ class IltaaCmdr {
 
     // Return an "Intent"-object
     // (TODO: we need to think about this format)
+    // TODO: there can be multiple intents from one command. Should we always
+    //       return them in array, even if there is just one?
     return Promise.resolve({
       action: 'sendMessage',
       targetId: event.replyTarget,

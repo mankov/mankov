@@ -140,6 +140,8 @@ class Core {
         winningBid = handlerBids[0].value();
       }
 
+      // Do we have a winner or not?
+      // TODO: does the "bid conflict case" need some attention/branch in here?
       if (!_.isNull(winningBid)) {
         // Get intents from the "winning Commander"
         return winningBid.commander.handleEvent(event);
