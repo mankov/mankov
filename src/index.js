@@ -81,9 +81,9 @@ class Core {
 
     // TODO: send event to all monitors
 
-    return Promise.resolve()
-      .then(this.getIntentsFromCommanders(event))
-      .then(function checkAreRespondersNeeded(commanderIntents) {
+    return this.getIntentsFromCommanders(event)
+      .then(commanderIntents => {
+        console.log('commanderIntents', commanderIntents);
         if (commanderIntents.length === 0) {
           // No intents from Commanders - check from Responders
           return this.getIntentsFromResponders(event);
@@ -92,7 +92,7 @@ class Core {
           return commanderIntents;
         }
       })
-      .then(function handleIntents(intents) {
+      .then(intents => {
         // In here we should have an array of "intents".
         // These intents may have come from Commanders or Responders,
         // it shouldn't matter at this point.
