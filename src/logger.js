@@ -16,7 +16,7 @@ function createLogger(filePath) {
     })]
   });
 
-  _setLevelForTransports(logger, process.env.LOG_LEVEL || 'info');
+  _setLevelForTransports(logger, process.env.LOG_LEVEL || 'debug');
   return logger;
 }
 

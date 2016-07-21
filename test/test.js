@@ -1,3 +1,3 @@
 describe('core', () => {
-  require('./test-core');
+  require('./test-platforms');
 });

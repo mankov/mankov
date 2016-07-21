@@ -40,44 +40,35 @@ class Core {
   }
 
   createPlatform(type, options) {
-
-    // Allow only unique names
-    if (_.find(this.platforms, platform => platform.name === options.name)) {
-      return Promise.reject(`Platform with name ${options.name} has already been created.`);
-    }
+    // TODO: validate options
 
     let chosenPlatform = _.find(this._availablePlatforms, ['type', type]);
 
     // Platform not found
     if (!chosenPlatform) {
       return Promise.reject(`Platform ${type} not available`);
-
-    } else {
-      this._platforms.push(new chosenPlatform(options));
-      log.debug(`Platform ${type} created`);
-      return Promise.resolve();
-
     }
+
+    // Allow only unique names
+    if (this.findPlatformByName(options.name)) {
+      return Promise.reject(`Platform with name ${options.name} has already been created.`);
+    }
+
+    // All ok, create platform
+    let newPlatform = new chosenPlatform.platform(options);
+
+    this._platforms.push(newPlatform);
+
+    // Subscribe to pipeline
+    newPlatform.onMessage(event => this.processEvent(event));
+
+    log.debug(`Platform ${type} created with name ${options.name}`);
+    return Promise.resolve(newPlatform);
 
   }
 
-  subscribeWebhook(options, callback) {
-    // TODO: allow unsubscribe
-    this._webhookUrls.push(options);
-
-    this._server.post(options.url, req => {
-
-      // Do the callback when a webhook event is fired
-      callback(req);
-
-    });
-
-    // Set webhook also to Platform if it is supported
-    this._platforms.forEach(platform => {
-      if (_.isFunction(platform.setWebhook)) {
-        platform.setWebhook(options);
-      }
-    });
+  findPlatformByName(name) {
+    return _.find(this._platforms, platform => platform.name === name);
   }
 
   addCommander(commanderInstance) {
@@ -91,12 +82,8 @@ class Core {
   }
 
   // "The start of the Pipeline"
-  processMessage(message) {
+  processEvent(event) {
     // TODO: call queue
-
-    // TODO: Parse message
-    //       (Check from which API message came from)
-    const event = message;
 
     // TODO: send event to all monitors
 

@@ -10,4 +10,8 @@ module.exports = class BasePlatform {
     return this._name;
   }
 
+  get client() {
+    return this._client;
+  }
+
 };
