@@ -12,6 +12,10 @@ describe('platforms', () => {
     core._platforms = [];
   });
 
+  it('should give available platforms', () => {
+    expect(core.getAvailablePlatforms()).to.deep.equal(['telegram', 'irc']);
+  });
+
   it('should be able to create a Telegram platform', (done) => {
     const options = {
       name: 'TestTGBot',
@@ -27,7 +31,7 @@ describe('platforms', () => {
       expect(platform).to.have.property('onMessage');
       expect(platform).to.have.property('parseMessage');
 
-      // Platform specific tests
+      // Platform specific asserts
       expect(platform.client.token).to.equal(options.client.token);
 
       done();
@@ -50,7 +54,7 @@ describe('platforms', () => {
       expect(platform).to.have.property('onMessage');
       expect(platform).to.have.property('parseMessage');
 
-      // Platform specific tests
+      // Platform specific asserts
       // ...
 
       done();
@@ -74,8 +78,8 @@ describe('platforms', () => {
     );
   });
 
-  it('should reject if platform type was not found', () => {
-    expect(core.createPlatform('unknownPlatform', {})).eventually.rejected;
-  });
+  it('should reject if platform type was not found', () =>
+    expect(core.createPlatform('unknownPlatform', {})).eventually.rejected
+  );
 
 });

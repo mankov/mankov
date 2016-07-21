@@ -6,6 +6,5 @@ const chaiAsPromised = require('chai-as-promised');
 chai.use(chaiAsPromised);
 
 module.exports = {
-  chai,
   expect: chai.expect
 };

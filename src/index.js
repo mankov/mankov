@@ -1,29 +1,18 @@
 const Promise     = require('bluebird');
 const _           = require('lodash');
 
-const telegramPlatform = require('./platforms/telegram');
-const ircPlatform = require('./platforms/irc');
+const telegramPlatform  = require('./platforms/telegram');
+const ircPlatform       = require('./platforms/irc');
 
-const httpServer = require('./http-server');
-const log      = require('./logger')(__filename);
-
-const DEFAULT_HOSTNAME = 'localhost';
-const DEFAULT_PORT = 3000;
-
+const log = require('./logger')(__filename);
 
 class Core {
-  constructor(port = DEFAULT_PORT, hostname = DEFAULT_HOSTNAME) {
+  constructor() {
 
     // The handlers
     this._monitors = [];
     this._commanders = [];
     this._responders = [];
-
-    this._port = port;
-    this._hostname = hostname;
-
-    // HTTP-server
-    this._server = httpServer(port, hostname);
 
     // The platforms
     this._platforms = [];
@@ -35,8 +24,8 @@ class Core {
   }
 
   // Use this if you don't want to use "new" keyword
-  static create(port, hostname) {
-    return new Core(port, hostname);
+  static create() {
+    return new Core();
   }
 
   createPlatform(type, options) {
@@ -69,6 +58,10 @@ class Core {
 
   findPlatformByName(name) {
     return _.find(this._platforms, platform => platform.name === name);
+  }
+
+  getAvailablePlatforms() {
+    return this._availablePlatforms.map(platform => platform.type);
   }
 
   addCommander(commanderInstance) {
