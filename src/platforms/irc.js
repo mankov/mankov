@@ -20,7 +20,7 @@ module.exports = class IrcPlatform extends BasePlatform {
   }
 
   parseMessage(from, to, msg) {
-    let event = { type: 'irc' };
+    let event = { origin: 'irc' };
     // TODO!
     return event;
   }

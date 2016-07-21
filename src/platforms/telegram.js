@@ -19,49 +19,36 @@ module.exports = class TelegramPlatform extends BasePlatform {
     });
   }
 
-  parseMessage(raw) {
-    let event = { type: 'telegram' };
-    event.eventId = raw.update_id;
+  parseMessage(msg) {
+    let event = { origin: 'telegram' };
+    event.eventId = msg.message_id;
+    event.text = msg.text;
+    event.userId = msg.from.id;
+
+    // Parse metadata
     event.meta = {};
+    event.meta.replyToMessage = msg.reply_to_message;
+    event.meta.userName = msg.from.username;
+    event.meta.userFirstName = msg.from.first_name;
+    event.meta.userLastName = msg.from.last_name;
+    event.meta.userCallName = _.isUndefined(event.userName) ?
+        event.meta.userFirstName :
+        `@${event.userName}`;
 
-    if (raw.message || raw.edited_message) {
-      let msg = (raw.message) ? raw.message : raw.edited_message;
-      event.text = msg.text;
-      event.userId = msg.from.id;
+    event.meta.isFromGroup = !_.isUndefined(msg.chat.title);
+    event.meta.chatGroupId = event.isFromGroup ? msg.chat.id : null;
+    event.meta.chatGroupTitle = event.isFromGroup ? msg.chat.title : null;
 
-      // Parse metadata
-      event.meta.replyToMessage = raw.reply_to_message;
-      event.meta.userName = raw.from.username;
-      event.meta.userFirstName = raw.from.first_name;
-      event.meta.userLastName = raw.from.last_name;
-      event.meta.userCallName = _.isUndefined(event.userName) ?
-          event.meta.userFirstName :
-          `@${event.userName}`;
+    event.meta.editDate = (msg.edit_date) ? msg.edit_date : null;
+    event.meta.entities = (msg.entities) ? msg.entities : null;
 
-      event.meta.isFromGroup = !_.isUndefined(raw.chat.title);
-      event.meta.chatGroupId = event.isFromGroup ? raw.chat.id : null;
-      event.meta.chatGroupTitle = event.isFromGroup ? raw.chat.title : null;
-
-      event.meta.editDate = (raw.edit_date) ? raw.edit_date : null;
-      event.meta.entities = (raw.entities) ? raw.entities : null;
-
-      event.meta.targetId = (event.isFromGroup) ? event.chatGroupId : event.userId;
-
-    } else if (raw.inline_query) {
-      // TODO: Parse inline query
-
-    } else if (raw.chosen_inline_query) {
-      // TODO: Parse ...
-
-    } else if (raw.callback_query) {
-      // TODO: Parse ...
-
-    } else {
-      log.error('Invalid Telegram message', raw);
-    }
+    event.meta.targetId = (event.isFromGroup) ? event.chatGroupId : event.userId;
 
     return event;
+
   }
+
+  // TODO: Parse Inline Query events
 
   setWebhook(options) {
     this._client.setWebHook(options.url, options.cert);
