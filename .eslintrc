@@ -46,6 +46,8 @@
       "exceptions": ["id", "i", "e", "fn", "_", "db", "or", "a", "b", "fs", "qb", "t", "to", "msg"]
     }],
 
+    "import/no-extraneous-dependencies": ["error", { devDependencies: true }],
+
     // rules disabled from airbnb config since they don't match our previous
     // coding style at all
     "no-multi-spaces": ["error", { exceptions: { "VariableDeclarator": true, "Property": true } }],
