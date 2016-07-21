@@ -23,6 +23,10 @@ function createLogger(filePath) {
 function _setLevelForTransports(logger, level) {
   _.each(logger.transports, transport => {
     transport.level = level;
+
+    if (level === 'debug') {
+      transport.prettyPrint = true;
+    }
   });
 }
 
