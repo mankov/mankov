@@ -56,6 +56,7 @@ class Core {
 
   }
 
+  // TODO: rename "getPlatformByName"?
   findPlatformByName(name) {
     return _.find(this._platforms, platform => platform.name === name);
   }
@@ -82,13 +83,13 @@ class Core {
 
     return Promise.resolve()
       .then(this.getIntentsFromCommanders(event))
-      .then(function checkAreRespondersNeeded(intents) {
-        if (intents.length === 0) {
+      .then(function checkAreRespondersNeeded(commanderIntents) {
+        if (commanderIntents.length === 0) {
           // No intents from Commanders - check from Responders
           return this.getIntentsFromResponders(event);
         } else {
-          log.debug('Intents from Commanders!', intents);
-          return intents;
+          log.debug('Intents from Commanders!', commanderIntents);
+          return commanderIntents;
         }
       })
       .then(function handleIntents(intents) {
@@ -113,7 +114,7 @@ class Core {
 
     return Promise.all(
       commandHandlerCandidates
-        // Hack to tet only solved promises
+        // Hack to get only solved promises
         // (http://stackoverflow.com/questions/30309273/keep-the-values-only-from-the-promises-that-resolve-and-ignore-the-rejected)
         .map(promise => promise.reflect())
         .filter(promise => promise.isFulfilled())

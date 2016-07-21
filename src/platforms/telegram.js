@@ -6,6 +6,8 @@ const BasePlatform = require('./base');
 
 module.exports = class TelegramPlatform extends BasePlatform {
 
+  // Options is parsed by node-telegram-bot-api, read more from
+  // https://github.com/yagop/node-telegram-bot-api#new_TelegramBot_new
   constructor(options) {
     super(options);
     this._client = new tgClient(options.client.token, options.client.optional);
