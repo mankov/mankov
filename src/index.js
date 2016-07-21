@@ -67,7 +67,7 @@ class Core {
   addCommander(commanderInstance) {
     if (!_.isFunction(commanderInstance.getBidForEvent)) {
       log.error('No getBidForEvent defined for', commanderInstance, 'ignoring!');
-    } else if (_.isFunction(commanderInstance.handleEvent)) {
+    } else if (!_.isFunction(commanderInstance.handleEvent)) {
       log.error('No handleEvent defined for', commanderInstance, 'ignoring!');
     } else {
       this._commanders.push(commanderInstance);
