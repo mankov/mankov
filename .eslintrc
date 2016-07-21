@@ -43,7 +43,7 @@
       "min": 3,
       "max": 30,
       "properties": "never",
-      "exceptions": ["id", "i", "e", "fn", "_", "db", "or", "a", "b", "fs", "qb", "t"]
+      "exceptions": ["id", "i", "e", "fn", "_", "db", "or", "a", "b", "fs", "qb", "t", "to", "msg"]
     }],
 
     // rules disabled from airbnb config since they don't match our previous
