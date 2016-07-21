@@ -1,5 +1,7 @@
 const nock = require('nock');
 
+// TODO: Give authentic response
+
 module.exports = (options) =>
   nock(`https://api.telegram.org/bot${options.apiKey}`)
 
@@ -15,16 +17,19 @@ module.exports = (options) =>
     .post('/sendChatAction', { chat_id: options.chatId, action: 'typing' })
     .reply(200, { ok: true, result: {} })
 
-    .post('/sendSticker', { chat_id: options.chatId, file: '' })
+    .post('/sendSticker', { chat_id: options.chatId, file: options.fileID })
     .reply(200, { ok: true, result: {} })
 
-    .post('/sendVideo', { chat_id: options.chatId, file: '' })
+    .post('/sendVideo', { chat_id: options.chatId, file: options.fileID })
     .reply(200, { ok: true, result: {} })
 
-    .post('/sendPhoto', { chat_id: options.chatId, file: '' })
+    .post('/sendPhoto', { chat_id: options.chatId, file: options.fileID })
     .reply(200, { ok: true, result: {} })
 
-    .post('/setWebhook', { url: options.webhookUrl })
+    .post('/setWebhook', { url: '' })
+    .reply(200, { ok: true, result: {} })
+
+    .post('/setWebhook', { url: options.webhookUrl, certificate: options.certificate })
     .reply(200, { ok: true, result: {} })
 
     .post('/getFile', { file_id: '' })

@@ -30,13 +30,7 @@ module.exports = class TelegramApi {
     return (
       request
       .get(`${this._tgApiUrl}/getMe`)
-      .then((res, err) => {
-        if (!err && res.body.ok) {
-          return Promise.resolve(res.body.result);
-        } else {
-          return this._generateErrorMsg(err, res);
-        }
-      })
+      .then((res, err) => this._validateResponse('getMe', res, err))
     );
   }
 
@@ -54,18 +48,7 @@ module.exports = class TelegramApi {
     return (request
       .post(`${this._tgApiUrl}/sendMessage`)
       .send(options)
-      .then((res, err) => {
-        if (!err && res.body.ok) {
-          log.debug(
-            `botApi: sending message to
-            ${options.chat_id}: "${_.truncate(options.text)}..."`
-          );
-          return Promise.resolve(res.body);
-
-        } else {
-          return this._generateErrorMsg(err, res);
-        }
-      })
+      .then((res, err) => this._validateResponse('sendMessage', res, err))
     );
   }
 
@@ -79,15 +62,7 @@ module.exports = class TelegramApi {
       request
       .post(`${this._tgApiUrl}/forwardMessage`)
       .send(options)
-      .then((res, err) => {
-        if (!err && res.body.ok) {
-          log.debug(`botApi: forwarded message to ${options.chat_id}`);
-          return Promise.resolve(res.body);
-
-        } else {
-          return this._generateErrorMsg(err, res);
-        }
-      })
+      .then((res, err) => this._validateResponse('forwardMessage', res, err))
     );
   }
 
@@ -100,15 +75,7 @@ module.exports = class TelegramApi {
       request
       .post(`${this._tgApiUrl}/sendChatAction`)
       .send(options)
-      .then((res, err) => {
-        if (!err && res.body.ok) {
-          log.debug(`botApi: sent action to ${options.chat_id}`);
-          return Promise.resolve(res.body);
-
-        } else {
-          return this._generateErrorMsg(err, res);
-        }
-      })
+      .then((res, err) => this._validateResponse('sendChatAction', res, err))
     );
   }
 
@@ -118,7 +85,7 @@ module.exports = class TelegramApi {
   // reply_to_message_id [int] OPTIONAL
   // reply_markup [ReplyKeyboardMarkup or ReplyKeyboardHide or ForceReply] OPTIONAL
   sendSticker(options) {
-    this._sendFile('sticker', options);
+    return this._sendFile('sticker', options);
   }
 
   // chat_id [int or string] REQUIRED
@@ -131,7 +98,7 @@ module.exports = class TelegramApi {
   // reply_to_message_id [int] OPTIONAL
   // reply_markup [ReplyKeyboardMarkup or ReplyKeyboardHide or ForceReply] OPTIONAL
   sendVideo(options) {
-    this._sendFile('video', options);
+    return this._sendFile('video', options);
   }
 
 
@@ -142,7 +109,7 @@ module.exports = class TelegramApi {
   // reply_to_message_id [int] OPTIONAL
   // reply_markup [ReplyKeyboardMarkup or ReplyKeyboardHide or ForceReply] OPTIONAL
   sendPhoto(options) {
-    this._sendFile('photo', options);
+    return this._sendFile('photo', options);
   }
 
   // url [string] REQUIRED
@@ -150,74 +117,63 @@ module.exports = class TelegramApi {
   setWebhook(options) {
       // TODO/NOTE: is deleting the old webhook required? I guess it is since it
       // is done in here, but is it really?
-
-    request
-    .post(`${this._tgApiUrl}/setWebhook`)
-    .send({ url: '' })
-    .then((res, err) => {
-      if (!err && res.body.ok) {
-        log.debug(`Previous webhook deleted, response: ${res.body}`);
-        return Promise.reject();
-      } else {
-        return this._generateErrorMsg(err, res);
-      }
-    })
-    .then(
+    return (
+      // Delete old webhook
       request
       .post(`${this._tgApiUrl}/setWebhook`)
-      .set('Content-Type', 'multipart/form-data')
-      .send(options)
-      .attach('certificate', options.certificate)
-      .then((res, err) => {
-
-        if (!err && res.body.ok) {
-          log.debug(`Webhook updated successfully, response: ${res.body}`);
-          return Promise.resolve(res.body.result);
-        }
-        else {
-          return this._generateErrorMsg(err, res);
-        }
-      })
+      .send({ url: '' })
+      .then((res, err) => this._validateResponse('setWebhook', res, err))
+      .then(
+        // Subscribe new webhook
+        request
+        .post(`${this._tgApiUrl}/setWebhook`)
+        .set('Content-Type', 'multipart/form-data')
+        .send(options)
+        .attach('certificate', options.certificate)
+        .then((res, err) => this._validateResponse('setWebhook', res, err))
+      )
     );
   }
 
 
   // file_id [string] REQUIRED
   getFile(options) {
-    request
-    .post(`${this._tgApiUrl}/getFile`)
-    .send(options)
-    .then((res, err) => {
-      if (!err && res.body.ok) {
-        return Promise.resolve(res.body.result);
-      } else {
-        return this._generateErrorMsg(err, res);
-      }
-    });
+    return (
+      request
+      .post(`${this._tgApiUrl}/getFile`)
+      .send(options)
+      .then((res, err) => this._validateResponse('getFile', res, err))
+    );
   }
 
   _sendFile(type, options) {
-    request
-    .post(`${this._tgApiUrl}/send${_.camelCase(type)}`)
-    .set('Content-Type', 'multipart/form-data')
-    .send(options)
-    .attach(type, options.file)
-    .then((res, err) => {
-      if (!err && res.body.ok) {
-        log.debug(`botApi: sent ${type} to ${options.chat_id}`);
-        return Promise.resolve(res.body.result);
-      } else {
-        return this._generateErrorMsg(err, res);
-      }
-    });
+    let req = request
+      .post(`${this._tgApiUrl}/send${_.capitalize(type)}`)
+      .send(options);
+
+    // Check if file was location instead of ID
+    if (!_.isNumber(options.file)) {
+      req
+      .set('Content-Type', 'multipart/form-data')
+      .attach(type, options.file);
+    }
+
+    return (
+      req.then((res, err) => this._validateResponse(`send${_.capitalize(type)}`, res, err))
+    );
   }
 
-  _generateErrorMsg(apiErr, res) {
-    let errmsg = (apiErr)
-      ? `Telegram API unreachable: ${apiErr}`
-      : `Error from Telegram API: ${res.body.description}`;
-    log.error(errmsg);
-    return Promise.reject(errmsg);
+  _validateResponse(action, res, err) {
+    if (!err && res.body.ok) {
+      log.debug(`botApi: executed ${action}`);
+      return Promise.resolve(res.body.result);
+    } else {
+      let errmsg = (err)
+        ? `Telegram API unreachable: ${err}`
+        : `Error from Telegram API: ${res.body.description}`;
+      log.error(errmsg);
+      return Promise.reject(errmsg);
+    }
   }
 
 };
