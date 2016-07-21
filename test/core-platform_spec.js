@@ -1,5 +1,4 @@
-const common = require('./common');
-const expect = common.expect;
+const expect = require('chai').expect;
 
 const coreLib = require('../src/index');
 

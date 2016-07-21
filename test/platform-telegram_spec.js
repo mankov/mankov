@@ -1,4 +1,3 @@
-const common = require('./common');
 const expect = require('chai').expect;
 
 const testData = require('./data/telegram-messages');
