@@ -15,12 +15,11 @@ class IltaaCmdr {
   //
   // Must always return a Promise.
   getBidForEvent(event) {
-    if (event.rawInput
+    if (event.text
         .toLowerCase()
-        .indexOf('/iltaa') > 0
+        .indexOf('/iltaa') >= 0
     ) {
       return Promise.resolve({
-        interested: true,
         description: 'Iltuilee käyttäjälle',
         commander: this
       });
