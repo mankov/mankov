@@ -26,5 +26,24 @@ data.rawIltaaMessage = {
   }
 };
 
+data.parsedIltaaMessage = {
+  origin: 'telegram',
+  eventId: 9527,
+  text: '/iltaa',
+  userId: 1337,
+  meta: {
+    replyToMessage: undefined,
+    userName: 'ncmpl',
+    userFirstName: 'Foo',
+    userLastName: 'Bar',
+    userCallName: 'Foo',
+    isFromGroup: false,
+    chatGroupId: null,
+    chatGroupTitle: null,
+    editDate: null,
+    targetId: 1337
+  }
+};
+
 
 module.exports = data;

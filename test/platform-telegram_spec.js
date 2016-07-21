@@ -4,6 +4,7 @@ const testData = require('./data/telegram-messages');
 
 const Platform = require('../src/platforms/telegram');
 
+
 describe('Telegram Platform', () => {
   let platform = null;
 
@@ -17,10 +18,8 @@ describe('Telegram Platform', () => {
   });
 
 
-  it('Parses raw Telegram message', () => {
+  it('Parses raw Telegram message correctly', () => {
     const parsedEvent = platform.parseMessage(testData.rawIltaaMessage.message);
-
-    console.log('parsed event', parsedEvent);
-    // TODO actually check the result
+    expect(parsedEvent).to.containSubset(testData.parsedIltaaMessage);
   });
 });
