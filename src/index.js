@@ -1,8 +1,8 @@
 const Promise     = require('bluebird');
 const _           = require('lodash');
 
-const telegramApi = require('./telegram-api');
-const telegramParser = require('./telegram-parser');
+const telegramPlatform = require('./platforms/telegram');
+const ircPlatform = require('./platforms/irc');
 
 const httpServer = require('./http-server');
 const log      = require('./logger')(__filename);
@@ -14,21 +14,23 @@ const DEFAULT_PORT = 3000;
 class Core {
   constructor(port = DEFAULT_PORT, hostname = DEFAULT_HOSTNAME) {
 
-    this._apis = [];
-
     // The handlers
     this._monitors = [];
     this._commanders = [];
     this._responders = [];
 
-    // Telegram-related variables
-    this._tgApi = null;
-    this._webhookUrl = null;
     this._port = port;
     this._hostname = hostname;
 
     // HTTP-server
     this._server = httpServer(port, hostname);
+
+    // The platforms
+    this._platforms = [];
+    this._availablePlatforms = [
+      { type: 'telegram', platform: telegramPlatform },
+      { type: 'irc', platform: ircPlatform }
+    ];
 
   }
 
@@ -37,30 +39,35 @@ class Core {
     return new Core(port, hostname);
   }
 
-  setTelegramApiKey(apiKey) {
-    this._apis.push({ name: 'telegram', api: new telegramApi(apiKey) });
+  createPlatform(type, options) {
+    let chosenPlatform = _.find(this._availablePlatforms, ['type', type]);
+    if (chosenPlatform) {
+      this._platforms.push(new chosenPlatform(options));
+      log.info(`Platform ${type} created`);
+
+    } else {
+      log.error(`Platform ${type} not available`);
+    }
+
   }
 
-  // Telegram-specific
   subscribeWebhook(options, callback) {
-    // TODO: remove existing webhook when creating a new one
-    if (!this._webhookUrl) {
-      this._webhookUrl = options.url;
+    // TODO: allow unsubscribe
+    this._webhookUrls.push(options);
 
-      this._server.post(options.url, req => {
+    this._server.post(options.url, req => {
 
-        // Do the callback when a webhook event is fired
-        callback(req);
+      // Do the callback when a webhook event is fired
+      callback(req);
 
-      });
+    });
 
-      // Set webhook also to API if it is supported
-      this._apis.forEach(api => {
-        if (_.isFunction(api.setWebhook)) {
-          api.setWebhook(options);
-        }
-      });
-    }
+    // Set webhook also to Platform if it is supported
+    this._platforms.forEach(platform => {
+      if (_.isFunction(platform.setWebhook)) {
+        platform.setWebhook(options);
+      }
+    });
   }
 
   addCommander(commanderInstance) {
