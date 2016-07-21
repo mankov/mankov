@@ -133,7 +133,7 @@ class Core {
 
         winningBid = handlerBids[0].value(); // TODO temp hack
 
-      } else if (handlerBids.length === 0) {
+      } else if (handlerBids.length === 1) {
         // Take the only bid we got
         winningBid = handlerBids[0].value();
       }
