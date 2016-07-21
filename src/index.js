@@ -103,6 +103,8 @@ class Core {
         // In here the Intents should be "cleared" by using whatever bot platform we
         // currently are using.
         log.debug('Got intents', intents);
+        // TODO: actually "solve" the intents instead of just returning them
+        return Promise.resolve(intents);
       });
   }
 
