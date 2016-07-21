@@ -40,13 +40,23 @@ class Core {
   }
 
   createPlatform(type, options) {
+
+    // Allow only unique names
+    if (_.find(this.platforms, platform => platform.name === options.name)) {
+      return Promise.reject(`Platform with name ${options.name} has already been created.`);
+    }
+
     let chosenPlatform = _.find(this._availablePlatforms, ['type', type]);
-    if (chosenPlatform) {
-      this._platforms.push(new chosenPlatform(options));
-      log.info(`Platform ${type} created`);
+
+    // Platform not found
+    if (!chosenPlatform) {
+      return Promise.reject(`Platform ${type} not available`);
 
     } else {
-      log.error(`Platform ${type} not available`);
+      this._platforms.push(new chosenPlatform(options));
+      log.debug(`Platform ${type} created`);
+      return Promise.resolve();
+
     }
 
   }
@@ -84,9 +94,9 @@ class Core {
   processMessage(message) {
     // TODO: call queue
 
-    // TODO: Support multiple chat platforms
+    // TODO: Parse message
     //       (Check from which API message came from)
-    const event = telegramParser(message);
+    const event = message;
 
     // TODO: send event to all monitors
 
