@@ -118,6 +118,8 @@ class Core {
     return Promise.all(commandHandlerCandidates.map(promise => promise.reflect()))
     .filter(promise => promise.isFulfilled())
     .then(function solveHandlerCommander(handlerBids) {
+      // NOTE: reflect() is used, handlerBids are NOT direct values of the promises
+      // (http://bluebirdjs.com/docs/api/reflect.html)
       let winningBid = null;
 
       if (handlerBids.length > 1) {
@@ -129,11 +131,11 @@ class Core {
         //   will listen for the user's response, and block those messages
         //   from going on. How to do that platform agnostically?)
 
-        winningBid = handlerBids[0]; // TODO temp hack
+        winningBid = handlerBids[0].value(); // TODO temp hack
 
       } else if (handlerBids.length === 0) {
         // Take the only bid we got
-        winningBid = handlerBids[0];
+        winningBid = handlerBids[0].value();
       }
 
       if (!_.isNull(winningBid)) {
