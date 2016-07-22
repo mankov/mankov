@@ -89,7 +89,7 @@ class Core {
 
     return this.getIntentsFromCommanders(event)
       .then(commanderIntents => {
-        console.log('commanderIntents', commanderIntents);
+        log.debug('commanderIntents', commanderIntents);
         if (commanderIntents.length === 0) {
           // No intents from Commanders - check from Responders
           return this.getIntentsFromResponders(event);

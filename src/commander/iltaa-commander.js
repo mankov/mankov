@@ -29,7 +29,6 @@ class IltaaCmdr {
   }
 
   handleEvent(event) {
-    console.log('Doing something');
     this._iltaaCount += 1;
 
     // Return an "Intent"-object

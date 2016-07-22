@@ -84,7 +84,7 @@ describe('Mankov Core', () => {
       });
     });
 
-    it('should not allow to create platform with same name', () => {
+    it('should not allow to create a bot with same name', () => {
       const name = 'TestIRCBot';
       const options = {
         server: 'http://example.com',

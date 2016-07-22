@@ -14,8 +14,20 @@ describe('Telegram Platform', () => {
     });
   });
 
-  it('Parses raw Telegram message correctly', () => {
-    const parsedEvent = bot._parseMessage(testData.rawIltaaMessage.message);
-    expect(parsedEvent).to.containSubset(testData.parsedIltaaMessage);
+  describe('Parses correctly', () => {
+
+    it('normal message', () => {
+      const parsedEvent = bot._parseMessage(testData.rawIltaaMessage.message);
+      expect(parsedEvent).to.containSubset(testData.parsedIltaaMessage);
+    });
+
+    it.skip('inline query', () => {
+      // TODO
+    });
+
+    it.skip('chosen inline result', () => {
+      // TODO
+    });
+
   });
 });
