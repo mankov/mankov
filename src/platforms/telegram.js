@@ -8,25 +8,37 @@ module.exports = class TelegramPlatform extends BasePlatform {
 
   // Options is parsed by node-telegram-bot-api, read more from
   // https://github.com/yagop/node-telegram-bot-api#new_TelegramBot_new
-  constructor(options) {
-    super(options);
-    this._client = new tgClient(options.client.token, options.client.optional);
+  constructor(name, options) {
+    super(name);
+    this._client = new tgClient(options.token, options.optional);
   }
 
   onMessage(callback) {
+
+    // Receives normal message
     this._client.on('message', (msg) => {
       callback(this._parseMessage(msg));
     });
+
+    // Receives Inline Query
+    this._client.on('inline_query', (msg) => {
+      callback(this._parseInlineQuery(msg));
+    });
+
+    // Receives Chosen Inline Result
+    this._client.on('chosen_inline_result', (msg) => {
+      callback(this._parseChosenInlineResult(msg));
+    });
   }
 
-  parseMessage(msg) {
+  _parseMessage(msg) {
     let event = { origin: 'telegram' };
     event.eventId = msg.message_id;
     event.text = msg.text;
     event.userId = msg.from.id;
 
     // Parse metadata
-    event.meta = {};
+    event.meta = { type: 'message' };
     event.meta.replyToMessage = msg.reply_to_message;
     event.meta.userName = msg.from.username;
     event.meta.userFirstName = msg.from.first_name;
@@ -48,7 +60,46 @@ module.exports = class TelegramPlatform extends BasePlatform {
 
   }
 
-  // TODO: Parse Inline Query events
+  _parseInlineQuery(msg) {
+    let event = { origin: 'telegram' };
+    event.eventId = msg.id;
+    event.text = msg.query;
+    event.userId = msg.from.id;
+
+    // Parse metadata
+    event.meta = { type: 'inline_query' };
+    event.meta.offset = msg.offset;
+
+    event.meta.location = (msg.location) ?
+      {
+        longitude: msg.location.longitude,
+        latitude: msg.location.latitude
+      } : null;
+
+    return event;
+  }
+
+  _parseChosenInlineResult(msg) {
+    let event = { origin: 'telegram' };
+    event.eventId = msg.result_id;
+    event.text = msg.query;
+    event.userId = msg.from.id;
+
+    // Parse metadata
+    event.meta = { type: 'chosen_inline_result' };
+
+    event.meta.location = (msg.location) ?
+      {
+        longitude: msg.location.longitude,
+        latitude: msg.location.latitude
+      } : null;
+
+    event.meta.inlineMessageId = (msg.inline_message_id) ?
+      msg.inline_message_id : null;
+
+    return event;
+
+  }
 
   setWebhook(options) {
     this._client.setWebHook(options.url, options.cert);

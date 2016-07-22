@@ -15,11 +15,13 @@ class Core {
     this._responders = [];
 
     // The platforms
-    this._platforms = [];
     this._availablePlatforms = [
       { type: 'telegram', platform: telegramPlatform },
       { type: 'irc', platform: ircPlatform }
     ];
+
+    // The bots (instances of platforms)
+    this._bots = [];
 
   }
 
@@ -28,7 +30,7 @@ class Core {
     return new Core();
   }
 
-  createPlatform(type, options) {
+  createBot(type, name, options) {
     // TODO: validate options
 
     let chosenPlatform = _.find(this._availablePlatforms, ['type', type]);
@@ -38,27 +40,31 @@ class Core {
       return Promise.reject(`Platform ${type} not available`);
     }
 
-    // Allow only unique names
-    if (this.findPlatformByName(options.name)) {
-      return Promise.reject(`Platform with name ${options.name} has already been created.`);
+    // Invalid name
+    if (!name) {
+      return Promise.reject('Missing parameter "name"');
     }
 
-    // All ok, create platform
-    let newPlatform = new chosenPlatform.platform(options);
+    // Allow only unique names
+    if (this.getBotByName(name)) {
+      return Promise.reject(`Bot with name "${name}" has already been created.`);
+    }
 
-    this._platforms.push(newPlatform);
+    // All ok, create bot
+    let newBot = new chosenPlatform.platform(name, options);
+
+    this._bots.push(newBot);
 
     // Subscribe to pipeline
-    newPlatform.onMessage(event => this.processEvent(event));
+    newBot.onMessage(event => this.processEvent(event));
 
-    log.debug(`Platform ${type} created with name ${options.name}`);
-    return Promise.resolve(newPlatform);
+    log.debug(`Bot "${name}" created from ${type} platform succesfully`);
+    return Promise.resolve(newBot);
 
   }
 
-  // TODO: rename "getPlatformByName"?
-  findPlatformByName(name) {
-    return _.find(this._platforms, platform => platform.name === name);
+  getBotByName(name) {
+    return _.find(this._bots, bot => bot.name === name);
   }
 
   getAvailablePlatforms() {

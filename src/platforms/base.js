@@ -1,8 +1,8 @@
 // This class is responsible of common functions between platforms
 
 module.exports = class BasePlatform {
-  constructor(options) {
-    this._name = options.name;
+  constructor(name) {
+    this._name = name;
     this._client = null;
   }
 
