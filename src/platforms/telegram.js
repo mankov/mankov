@@ -4,13 +4,20 @@ const log       = require('../logger')(__filename);
 
 const BasePlatform = require('./base');
 
+const TYPE = 'telegram';
+
 module.exports = class TelegramPlatform extends BasePlatform {
 
   // Options is parsed by node-telegram-bot-api, read more from
   // https://github.com/yagop/node-telegram-bot-api#new_TelegramBot_new
   constructor(name, options) {
     super(name);
+    this._type = TYPE;
     this._client = new tgClient(options.token, options.optional);
+  }
+
+  static get type() {
+    return TYPE;
   }
 
   onMessage(callback) {
@@ -32,7 +39,7 @@ module.exports = class TelegramPlatform extends BasePlatform {
   }
 
   _parseMessage(msg) {
-    let event = { origin: 'telegram' };
+    let event = { origin: this._type };
     event.eventId = msg.message_id;
     event.text = msg.text;
     event.userId = msg.from.id;
@@ -61,7 +68,7 @@ module.exports = class TelegramPlatform extends BasePlatform {
   }
 
   _parseInlineQuery(msg) {
-    let event = { origin: 'telegram' };
+    let event = { origin: this._type };
     event.eventId = msg.id;
     event.text = msg.query;
     event.userId = msg.from.id;
@@ -80,7 +87,7 @@ module.exports = class TelegramPlatform extends BasePlatform {
   }
 
   _parseChosenInlineResult(msg) {
-    let event = { origin: 'telegram' };
+    let event = { origin: this._type };
     event.eventId = msg.result_id;
     event.text = msg.query;
     event.userId = msg.from.id;

@@ -16,8 +16,8 @@ class Core {
 
     // The platforms
     this._availablePlatforms = [
-      { type: 'telegram', platform: telegramPlatform },
-      { type: 'irc', platform: ircPlatform }
+      telegramPlatform,
+      ircPlatform
     ];
 
     // The bots (instances of platforms)
@@ -31,9 +31,8 @@ class Core {
   }
 
   createBot(type, name, options) {
-    // TODO: validate options
 
-    let chosenPlatform = _.find(this._availablePlatforms, ['type', type]);
+    let chosenPlatform = _.find(this._availablePlatforms, platform => platform.type === type);
 
     // Platform not found
     if (!chosenPlatform) {
@@ -51,7 +50,7 @@ class Core {
     }
 
     // All ok, create bot
-    let newBot = new chosenPlatform.platform(name, options);
+    let newBot = new chosenPlatform(name, options);
 
     this._bots.push(newBot);
 
