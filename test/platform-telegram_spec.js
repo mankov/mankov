@@ -6,20 +6,16 @@ const Platform = require('../src/platforms/telegram');
 
 
 describe('Telegram Platform', () => {
-  let platform = null;
+  let bot = null;
 
   before(() => {
-    platform = new Platform({
-      name: 'test',
-      client: {
-        token: 'abc-1337'
-      }
+    bot = new Platform('test', {
+      token: '123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11'
     });
   });
 
-
   it('Parses raw Telegram message correctly', () => {
-    const parsedEvent = platform.parseMessage(testData.rawIltaaMessage.message);
+    const parsedEvent = bot._parseMessage(testData.rawIltaaMessage.message);
     expect(parsedEvent).to.containSubset(testData.parsedIltaaMessage);
   });
 });

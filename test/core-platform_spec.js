@@ -15,25 +15,24 @@ describe('platforms', () => {
     expect(core.getAvailablePlatforms()).to.deep.equal(['telegram', 'irc']);
   });
 
-  it('should be able to create a Telegram platform', (done) => {
+  it('should be able to create a Telegram bot', (done) => {
     const name = 'TestTGBot';
     const options = { token: '123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11' };
 
     core.createBot('telegram', name, options)
-    .then((platform) => {
+    .then((bot) => {
 
-      expect(platform.name).to.equal(name);
-      expect(platform).to.have.property('onMessage');
-      expect(platform).to.have.property('parseMessage');
+      expect(bot.name).to.equal(name);
+      expect(bot.onMessage).to.be.a.function;
 
       // Platform specific asserts
-      expect(platform.client.token).to.equal(options.token);
+      expect(bot.client.token).to.equal(options.token);
 
       done();
     });
   });
 
-  it('should be able to create an IRC platform', (done) => {
+  it('should be able to create an IRC bot', (done) => {
     const name = 'TestIRCBot';
     const options = {
       server: 'http://example.com',
@@ -41,11 +40,10 @@ describe('platforms', () => {
     };
 
     core.createBot('irc', name, options)
-    .then((platform) => {
+    .then((bot) => {
 
-      expect(platform.name).to.equal(name);
-      expect(platform).to.have.property('onMessage');
-      expect(platform).to.have.property('parseMessage');
+      expect(bot.name).to.equal(name);
+      expect(bot.onMessage).to.be.a.function;
 
       // Platform specific asserts
       // ...
