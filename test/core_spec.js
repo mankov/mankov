@@ -23,9 +23,9 @@ describe('Mankov Core', () => {
 
     it('Handles basic /iltaa-command', () => mankov
       .processEvent(testData.parsedIltaaMessage)
-      .then(intent => {
+      .then(intents => {
         // NOTE/TODO: this test will be scrapped when functionality is added
-        expect(intent).to.containSubset({
+        expect(intents[0]).to.containSubset({
           action: 'sendMessage',
           text: 'Game of Iltuz',
           targetId: testData.parsedIltaaMessage.replyTarget

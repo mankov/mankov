@@ -98,6 +98,8 @@ class Core {
     return this.getIntentsFromCommanders(event)
       .then(commanderIntents => {
         log.debug('commanderIntents', commanderIntents);
+        console.assert(_.isArray(commanderIntents)); // Remove from production
+
         if (commanderIntents.length === 0) {
           // No intents from Commanders - check from Responders
           return this.getIntentsFromResponders(event);
@@ -107,6 +109,9 @@ class Core {
         }
       })
       .then(intents => {
+        log.debug('Got intents', intents);
+        console.assert(_.isArray(intents)); // Remove from production
+
         // In here we should have an array of "intents".
         // These intents may have come from Commanders or Responders,
         // it shouldn't matter at this point.
@@ -116,7 +121,7 @@ class Core {
         //
         // In here the Intents should be "cleared" by using whatever bot platform we
         // currently are using.
-        log.debug('Got intents', intents);
+
         // TODO: actually "solve" the intents instead of just returning them
         return Promise.resolve(intents);
       });
@@ -158,7 +163,9 @@ class Core {
       // TODO: does the "bid conflict case" need some attention/branch in here?
       if (!_.isNull(winningBid)) {
         // Get intents from the "winning Commander"
-        return winningBid.commander.handleEvent(event);
+        // Retrun value from commander can be a single Promise or Array of Promises
+        return Promise.all(_.flatten([winningBid.commander.handleEvent(event)]));
+
       } else {
         // There was no interested from commanders, send empty array to
         // state that there are no intents from commanders

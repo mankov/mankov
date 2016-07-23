@@ -31,10 +31,8 @@ class IltaaCommander {
   handleEvent(event) {
     this._iltaaCount += 1;
 
-    // Return an "Intent"-object
+    // Return an "Intent"-object. It can be a single Promise or an array of them
     // (TODO: we need to think about this format)
-    // TODO: there can be multiple intents from one command. Should we always
-    //       return them in array, even if there is just one?
     return Promise.resolve({
       action: 'sendMessage',
       targetId: event.replyTarget,
