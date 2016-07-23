@@ -39,7 +39,11 @@ module.exports = class TelegramPlatform extends BasePlatform {
   }
 
   _parseMessage(msg) {
-    let event = { origin: this._type };
+    let event = {};
+
+    // Mandatory properties
+    event.origin = this._type;
+    event.fromBot = this._name;
     event.eventId = msg.message_id;
     event.text = msg.text;
     event.userId = msg.from.id;
@@ -68,7 +72,11 @@ module.exports = class TelegramPlatform extends BasePlatform {
   }
 
   _parseInlineQuery(msg) {
-    let event = { origin: this._type };
+    let event = {};
+
+    // Mandatory properties
+    event.origin = this._type;
+    event.fromBot = this._name;
     event.eventId = msg.id;
     event.text = msg.query;
     event.userId = msg.from.id;
@@ -87,7 +95,11 @@ module.exports = class TelegramPlatform extends BasePlatform {
   }
 
   _parseChosenInlineResult(msg) {
-    let event = { origin: this._type };
+    let event = {};
+
+    // Mandatory properties
+    event.origin = this._type;
+    event.fromBot = this._name;
     event.eventId = msg.result_id;
     event.text = msg.query;
     event.userId = msg.from.id;

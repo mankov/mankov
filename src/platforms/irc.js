@@ -28,7 +28,11 @@ module.exports = class IrcPlatform extends BasePlatform {
   }
 
   parseMessage(from, to, msg) {
-    let event = { origin: this._type };
+    let event = {};
+
+    // Mandatory properties
+    event.origin = this._type;
+    event.fromBot = this._name;
     event.eventId = 1234; // TODO: Make unique hash because IRC doesn't give event IDs
     event.text = msg;
     event.userId = from; // NOTE: Can there be users with same username?
