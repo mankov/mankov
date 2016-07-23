@@ -1,9 +1,9 @@
-// # IltaaCmdr - example commander
+// # IltaaCommander - example commander
 //
 const Promise = require('bluebird');
 
 
-class IltaaCmdr {
+class IltaaCommander {
 
   constructor() {
     this._iltaaCount = 0;
@@ -44,4 +44,4 @@ class IltaaCmdr {
 
 }
 
-module.exports = IltaaCmdr;
+module.exports = IltaaCommander;

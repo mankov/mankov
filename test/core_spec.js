@@ -3,7 +3,9 @@ const expect = require('chai').expect;
 const testData = require('./data/telegram-messages');
 
 const Mankov = require('../src/index');
-const IltaaCommander = require('../src/commander/iltaa-commander');
+
+const IltaaCommander  = require('./commanders/iltaa-commander');
+const logMonitor      = require('./monitors/log-monitor');
 
 
 describe('Mankov Core', () => {
@@ -33,6 +35,25 @@ describe('Mankov Core', () => {
   });
 
   describe.skip('Responders', () => {
+    // TODO
+  });
+
+  describe('Monitors', () => {
+    let monitor = null;
+
+    before(() => {
+      monitor = new logMonitor();
+      mankov.addMonitor(monitor);
+    });
+
+    it('can add a monitor to the core', () => mankov
+      .processEvent(testData.parsedIltaaMessage)
+      .then(expect(monitor.lastEvent).to.equal(testData.parsedIltaaMessage))
+    );
+
+    it.skip('should not crash the core even if there was an error', () => {
+      // TODO
+    });
 
   });
 

@@ -72,11 +72,19 @@ class Core {
 
   addCommander(commanderInstance) {
     if (!_.isFunction(commanderInstance.getBidForEvent)) {
-      log.error('No getBidForEvent defined for', commanderInstance, 'ignoring!');
+      log.error(`No getBidForEvent defined for ${commanderInstance.constructor.name}!`);
     } else if (!_.isFunction(commanderInstance.handleEvent)) {
-      log.error('No handleEvent defined for', commanderInstance, 'ignoring!');
+      log.error(`No handleEvent defined for ${commanderInstance.constructor.name} ignoring!`);
     } else {
       this._commanders.push(commanderInstance);
+    }
+  }
+
+  addMonitor(monitorInstance) {
+    if (!_.isFunction(monitorInstance.handleEvent)) {
+      log.error(`No handleEvent defined for ${monitorInstance.constructor.name} ignoring!`);
+    } else {
+      this._monitors.push(monitorInstance);
     }
   }
 
@@ -84,7 +92,8 @@ class Core {
   processEvent(event) {
     // TODO: call queue
 
-    // TODO: send event to all monitors
+    // Send event to all monitors
+    this._monitors.forEach(monitor => monitor.handleEvent(event));
 
     return this.getIntentsFromCommanders(event)
       .then(commanderIntents => {
