@@ -17,6 +17,7 @@ describe('Mankov Core', () => {
 
   describe('Commanders', () => {
     before(() => {
+      mankov.createBot('telegram', 'TestBot', {token: 'ASDF-1'});
       mankov.addCommander(new IltaaCommander());
     });
 
@@ -25,10 +26,10 @@ describe('Mankov Core', () => {
       .processEvent(testData.parsedIltaaMessage)
       .then(intents => {
         // NOTE/TODO: this test will be scrapped when functionality is added
-        expect(intents[0]).to.containSubset({
+        expect(intents.TestBot[0]).to.containSubset({
           action: 'sendMessage',
           text: 'Game of Iltuz',
-          targetId: testData.parsedIltaaMessage.replyTarget
+          targetId: testData.parsedIltaaMessage.userId
         });
       })
     );

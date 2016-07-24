@@ -38,6 +38,11 @@ module.exports = class TelegramPlatform extends BasePlatform {
     });
   }
 
+  handleActions(actions) {
+    log.debug('Handling actions!', actions);
+    return Promise.resolve();
+  }
+
   _parseMessage(msg) {
     let event = {};
 

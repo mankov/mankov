@@ -21,7 +21,7 @@ class Core {
     ];
 
     // The bots (instances of platforms)
-    this._bots = [];
+    this._bots = {};
 
   }
 
@@ -39,20 +39,23 @@ class Core {
       return Promise.reject(`Platform ${type} not available`);
     }
 
+    // TODO/NOTE: Should we test the platform if it has the required functions
+    //            (Probably in the future we can allow users to add their own platforms
+    //            to Mankov)
+
     // Invalid name
     if (!name) {
       return Promise.reject('Missing parameter "name"');
     }
 
     // Allow only unique names
-    if (this.getBotByName(name)) {
+    if (this._bots[name]) {
       return Promise.reject(`Bot with name "${name}" has already been created.`);
     }
 
     // All ok, create bot
     let newBot = new chosenPlatform(name, options);
-
-    this._bots.push(newBot);
+    this._bots[name] = newBot;
 
     // Subscribe to pipeline
     newBot.onMessage(event => this.processEvent(event));
@@ -60,10 +63,6 @@ class Core {
     log.debug(`Bot "${name}" created from ${type} platform succesfully`);
     return Promise.resolve(newBot);
 
-  }
-
-  getBotByName(name) {
-    return _.find(this._bots, bot => bot.name === name);
   }
 
   getAvailablePlatforms() {
@@ -109,8 +108,12 @@ class Core {
         }
       })
       .then(intents => {
-        log.debug('Got intents', intents);
         console.assert(_.isArray(intents)); // Remove from production
+
+        // If there was no intents, skip rest of the pipeline
+        if (_.isEmpty(intents)) return Promise.resolve([]);
+
+        log.debug('Got intents', intents);
 
         // In here we should have an array of "intents".
         // These intents may have come from Commanders or Responders,
@@ -122,8 +125,15 @@ class Core {
         // In here the Intents should be "cleared" by using whatever bot platform we
         // currently are using.
 
-        // TODO: actually "solve" the intents instead of just returning them
-        return Promise.resolve(intents);
+        // Returns array of intents grouped by bot names which are going to be used.
+        // It also fills the mandatory intent properties if they were not
+        // defined at where the intent came from.
+        let botActions = this.parseIntents(intents, event);
+
+        // Send actions to bots so they can execute the required actions
+        _.forEach(botActions, (actions, bot) => this._bots[bot].handleActions(actions));
+
+        return Promise.resolve(botActions);
       });
   }
 
@@ -177,6 +187,25 @@ class Core {
   getIntentsFromResponders(event) {
     // TODO!
     return [];
+  }
+
+  parseIntents(intents, event) {
+
+    let parsedIntents = intents.map(intent => {
+
+      intent.toBot = (intent.toBot) ? intent.toBot : event.fromBot;
+      intent.targetId = (intent.targetId) ? intent.targetId : event.userId;
+
+      // If there was text and action was not defined, assume that
+      // intented action was sendMessage
+      if (intent.text && !intent.action) {
+        intent.action = 'sendMessage';
+      }
+
+      return intent;
+    });
+
+    return _.groupBy(parsedIntents, 'toBot');
   }
 }
 

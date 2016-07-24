@@ -28,6 +28,7 @@ data.rawIltaaMessage = {
 
 data.parsedIltaaMessage = {
   origin: 'telegram',
+  fromBot: 'TestBot',
   eventId: 9527,
   text: '/iltaa',
   userId: 1337,

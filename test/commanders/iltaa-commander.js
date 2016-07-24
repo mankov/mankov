@@ -35,7 +35,6 @@ class IltaaCommander {
     // (TODO: we need to think about this format)
     return Promise.resolve({
       action: 'sendMessage',
-      targetId: event.replyTarget,
       text: 'Game of Iltuz'
     });
   }
