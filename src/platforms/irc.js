@@ -33,9 +33,18 @@ module.exports = class IrcPlatform extends BasePlatform {
     // Mandatory properties
     event.origin = this._type;
     event.fromBot = this._name;
+
     event.eventId = 1234; // TODO: Make unique hash because IRC doesn't give event IDs
     event.text = msg;
-    event.userId = from; // NOTE: Can there be users with same username?
+
+    // TODO: save also the irc network which this event is from.
+    // Inside one network (such as QuakeNet or IRCNet) the usernames
+    // are always unique. So by combining the network information we can
+    // at some level identify users.
+    //
+    // (NOTE: if username is not used, anyone is free to change
+    //  their name to that so this can't be trusted 100%)
+    event.userId = from;
 
     // Parse metadata
     event.meta.from = from;

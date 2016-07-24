@@ -1,4 +1,5 @@
-// LogMonitor - Example monitor which simply saves the last event to variable
+// # LogMonitor
+//  Example monitor which simply saves the last event to variable
 
 const log = require('../../src/logger')(__filename);
 

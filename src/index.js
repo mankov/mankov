@@ -148,6 +148,7 @@ class Core {
     // (http://stackoverflow.com/questions/30309273/keep-the-values-only-from-the-promises-that-resolve-and-ignore-the-rejected)
     return Promise.all(commandHandlerCandidates.map(promise => promise.reflect()))
     .filter(promise => promise.isFulfilled())
+    // TODO .map i.value() ?
     .then(function solveHandlerCommander(handlerBids) {
       // NOTE: reflect() is used, handlerBids are NOT direct values of the promises
       // (http://bluebirdjs.com/docs/api/reflect.html)
@@ -174,6 +175,11 @@ class Core {
       if (!_.isNull(winningBid)) {
         // Get intents from the "winning Commander"
         // Retrun value from commander can be a single Promise or Array of Promises
+        //
+        // TODO/NOTE: is Promise.all required in here? There is always only one
+        // event at time which is given to "winning commander", and from that event
+        // the commander will return 0-n intents. So there is only one Promise to
+        // wait from the commander?
         return Promise.all(_.flatten([winningBid.commander.handleEvent(event)]));
 
       } else {
