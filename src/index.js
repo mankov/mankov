@@ -72,6 +72,14 @@ class Core {
     return this._availablePlatforms.map(platform => platform.type);
   }
 
+  addResponder(responderInstance) {
+    if (!_.isFunction(responderInstance.handleEvent)) {
+      log.error(`No handleEvent defined for ${responderInstance.constructor.name} ignoring!`);
+    } else {
+      this._responders.push(responderInstance);
+    }
+  }
+
   addCommander(commanderInstance) {
     if (!_.isFunction(commanderInstance.getBidForEvent)) {
       log.error(`No getBidForEvent defined for ${commanderInstance.constructor.name}!`);
@@ -145,7 +153,6 @@ class Core {
     const commandHandlerCandidates = _.map(this._commanders, cmdr =>
       cmdr.getBidForEvent(event)
     );
-
 
     // Hack to get only solved promises
     // (http://stackoverflow.com/questions/30309273/keep-the-values-only-from-the-promises-that-resolve-and-ignore-the-rejected)
