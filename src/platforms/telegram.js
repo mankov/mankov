@@ -39,8 +39,30 @@ module.exports = class TelegramPlatform extends BasePlatform {
   }
 
   handleActions(actions) {
-    log.debug('Handling actions!', actions);
-    return Promise.resolve();
+
+    let clientPromises = [];
+
+    _.forEach(actions, action => {
+      let clientPromise = null;
+
+      switch (action.name) {
+
+        case 'sendMessage':
+          clientPromise = this._client.sendMessage(action.text, action.targetId, action.options);
+          break;
+
+        // TODO: Rest of the API
+
+        default:
+          // Unknown command
+          clientPromise = Promise.reject('Unknown command');
+      }
+
+      clientPromises.push(clientPromise);
+    });
+
+    // TODO: Some kind of error handling?
+    return clientPromises;
   }
 
   _parseMessage(msg) {
@@ -124,10 +146,5 @@ module.exports = class TelegramPlatform extends BasePlatform {
     return event;
 
   }
-
-  setWebhook(options) {
-    this._client.setWebHook(options.url, options.cert);
-  }
-
 
 };

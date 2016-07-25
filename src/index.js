@@ -61,7 +61,10 @@ class Core {
     newBot.onMessage(event => this.processEvent(event));
 
     log.debug(`Bot "${name}" created from ${type} platform succesfully`);
-    return Promise.resolve(newBot);
+
+    // Returns the underlying library so developer can interact
+    // with it directly if necessary (setting webhooks etc.)
+    return Promise.resolve(newBot.client);
 
   }
 
