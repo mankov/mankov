@@ -105,7 +105,7 @@ class Core {
     // Send message to "Pipeline"
     return Promise.resolve()
       .then(() => this.getActions(event))
-      .then(actions => this.executeActions(actions));
+      .then(actions => this.executeActions(actions, event));
   }
 
 
@@ -130,9 +130,13 @@ class Core {
       });
   }
 
-  executeActions(actions) {
+  executeActions(actions, event) {
     // TODO: IMPLEMENT!
     // -> send the actions to whereever they are going etc
+
+    // intent.toBot = (intent.toBot) ? intent.toBot : event.fromBot;
+    // intent.targetId = (intent.targetId) ? intent.targetId : event.userId;
+
 
     console.assert(_.isArray(actions)); // Remove from production
 
