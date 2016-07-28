@@ -1,10 +1,12 @@
 const expect = require('chai').expect;
 
 const testData = require('./data/telegram-messages');
+const eventGenerator = require('./event-generator');
 
 const Mankov = require('../src/index');
 
 const IltaaCommander  = require('./commanders/iltaa-commander');
+const MoroResponder   = require('./responders/moro-responder');
 const logMonitor      = require('./monitors/log-monitor');
 
 
@@ -44,8 +46,23 @@ describe('Mankov Core', () => {
     );
   });
 
-  describe.skip('Responders', () => {
-    // TODO
+
+  describe('Responders', () => {
+    before(() => {
+      mankov.addResponder(new MoroResponder(100, 'testimoroprefix'));
+    });
+
+    it('Responds to message with a keyword', () => mankov
+      .getActions(eventGenerator.textEvent('juuh moro nääs'))
+      .then(actions => {
+        expect(actions).to.be.an.array;
+        console.log('teaojreoaijrioea', actions, actions.payload);
+        // expect(actions[0]).
+      })
+    );
+  });
+
+
   });
 
   describe('Monitors', () => {
