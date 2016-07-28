@@ -1,4 +1,5 @@
 const expect = require('chai').expect;
+const assert = require('chai').assert;
 
 const testData = require('./data/telegram-messages');
 const eventGenerator = require('./event-generator');
@@ -31,9 +32,6 @@ describe('Mankov Core', () => {
     it('Handles basic /iltaa-command', () => mankov
       .getActions(testData.parsedIltaaMessage)
       .then(actions => {
-        // NOTE/TODO: this test will be scrapped when functionality is added
-
-        console.log('actions', actions);
 
         expect(actions[0]).to.containSubset({
           type: 'SEND_MESSAGE',
@@ -56,13 +54,30 @@ describe('Mankov Core', () => {
       .getActions(eventGenerator.textEvent('juuh moro nääs'))
       .then(actions => {
         expect(actions).to.be.an.array;
-        console.log('teaojreoaijrioea', actions, actions.payload);
-        // expect(actions[0]).
+        expect(actions).to.have.length(1);
+
+        assert(
+          actions[0].payload.text.indexOf('testimoroprefix') >= 0,
+          'prefix should´ve been added to end of response action text'
+        );
       })
     );
   });
 
 
+  describe('Comamnders and Responders', () => {
+    before(() => {
+      // this relies that the IltaaCommander and MoroResponder
+      // are attached to mankov previously
+    });
+
+    it('Ignores events with no keywords in them', () => mankov
+      .getActions(eventGenerator.textEvent('no keywords in it'))
+      .then(actions => {
+        expect(actions).to.be.an.array;
+        expect(actions.length).to.equal(0);
+      })
+    );
   });
 
   describe('Monitors', () => {
@@ -96,6 +111,7 @@ describe('Mankov Core', () => {
     });
 
     it('should be able to create a Telegram bot', (done) => {
+      // TODO: these could be in a dedicated test file?
       const name = 'TestTGBot';
       const options = { token: '123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11' };
 
@@ -113,6 +129,7 @@ describe('Mankov Core', () => {
     });
 
     it('should be able to create an IRC bot', (done) => {
+      // TODO: these could be in a dedicated test file?
       const name = 'TestIRCBot';
       const options = {
         server: 'http://example.com',
