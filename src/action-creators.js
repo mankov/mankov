@@ -9,7 +9,7 @@ const creator = {};
 
 creator.sendMessage = (target, text) => ({
   type: types.SEND_MESSAGE,
-  payload: { text }
+  payload: { text, target }
 });
 
 module.exports = creator;
