@@ -201,8 +201,26 @@ class Core {
   }
 
   getIntentsFromResponders(event) {
-    // TODO!
-    return [];
+    const responderActionPromises = _.map(this._responders, rspndr =>
+      rspndr.handleEvent(event)
+    );
+
+    return Promise.all(responderActionPromises.map(promise => promise.reflect()))
+      .filter(promise => promise.isFulfilled())
+      .map(reflectedPromise => reflectedPromise.value())
+      .then(responderActionCandidates => {
+
+        // TODO: in here we have 0-n arrays of actions for each responder which resolved
+        // our handleEvent call. Implement some fancy logic for selecting which responder
+        // to use or combine them or whatever!
+        //
+        // For now we just select the first one.
+        if (_.isArray(responderActionCandidates) && responderActionCandidates.length > 0) {
+          return Promise.resolve(responderActionCandidates[0]);
+        } else {
+          return Promise.resolve([]);
+        }
+      });
   }
 
   parseIntents(intents, event) {
