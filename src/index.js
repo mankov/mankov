@@ -105,7 +105,7 @@ class Core {
     // Send message to "Pipeline"
     return Promise.resolve()
       .then(() => this.getActions(event))
-      .then(actions => this.handleActions(actions));
+      .then(actions => this.executeActions(actions));
   }
 
 
@@ -130,7 +130,7 @@ class Core {
       });
   }
 
-  handleActions(actions) {
+  executeActions(actions) {
     // TODO: IMPLEMENT!
     // -> send the actions to whereever they are going etc
 
