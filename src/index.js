@@ -6,9 +6,9 @@ const ircPlatform       = require('./platforms/irc');
 
 const log = require('./logger')(__filename);
 
+
 class Core {
   constructor() {
-
     // The handlers
     this._monitors = [];
     this._commanders = [];
@@ -22,7 +22,6 @@ class Core {
 
     // The bots (instances of platforms)
     this._bots = {};
-
   }
 
   // Use this if you don't want to use "new" keyword
@@ -38,10 +37,6 @@ class Core {
     if (!chosenPlatform) {
       return Promise.reject(`Platform ${type} not available`);
     }
-
-    // TODO/NOTE: Should we test the platform if it has the required functions
-    //            (Probably in the future we can allow users to add their own platforms
-    //            to Mankov)
 
     // Invalid name
     if (!name) {
@@ -60,7 +55,7 @@ class Core {
     // Subscribe to pipeline
     newBot.onMessage(event => this.processEvent(event));
 
-    log.debug(`Bot "${name}" created from ${type} platform succesfully`);
+    log.info(`Bot "${name}" created from ${type} platform succesfully`);
 
     // Returns the underlying library so developer can interact
     // with it directly if necessary (setting webhooks etc.)
@@ -71,6 +66,8 @@ class Core {
   getAvailablePlatforms() {
     return this._availablePlatforms.map(platform => platform.type);
   }
+
+  // TODO: addPlatform() to allow users to implement their own platforms?
 
   addResponder(responderInstance) {
     if (!_.isFunction(responderInstance.handleEvent)) {
@@ -114,7 +111,7 @@ class Core {
 
   getActions(event) {
     return Promise.resolve()
-      .then(() => this.getIntentsFromCommanders(event))
+      .then(() => this.getActionsFromCommanders(event))
       .then(commanderActions => {
         // If only one action is returned, wrap it into array
         commanderActions = !_.isArray(commanderActions)
@@ -124,11 +121,11 @@ class Core {
         console.assert(_.isArray(commanderActions)); // Remove from production
 
         if (commanderActions.length > 0) {
-          log.debug('Intents from Commanders!', commanderActions);
+          log.debug('Actions from Commanders!', commanderActions);
           return commanderActions;
         } else {
-          // No intents from Commanders - check from Responders
-          return this.getIntentsFromResponders(event);
+          // No actions from Commanders - ask from Responders
+          return this.getActionsFromResponders(event);
         }
       });
   }
@@ -153,8 +150,8 @@ class Core {
     // currently are using.
 
     // Returns array of actions grouped by bot names which are going to be used.
-    // It also fills the mandatory intent properties if they were not
-    // defined at where the intent came from.
+    // It also fills the mandatory action properties if they were not
+    // defined at where the action came from.
 
     // Send actions to bots so they can execute the required actions
     // _.forEach(botActions, (actions, bot) => this._bots[bot].handleActions(actions));
@@ -162,7 +159,7 @@ class Core {
     return actions;
   }
 
-  getIntentsFromCommanders(event) {
+  getActionsFromCommanders(event) {
     // # Command & Respond -loop
     const commandHandlerCandidates = _.map(this._commanders, cmdr =>
       cmdr.getBidForEvent(event)
@@ -197,18 +194,18 @@ class Core {
       // Do we have a winner or not?
       // TODO: does the "bid conflict case" need some attention/branch in here?
       if (!_.isNull(winningBid)) {
-        // Get intents from the "winning Commander"
+        // Get actions from the "winning Commander"
         return winningBid.commander.handleEvent(event);
 
       } else {
         // There was no interested from commanders, send empty array to
-        // state that there are no intents from commanders
+        // state that there are no actions from commanders
         return [];
       }
     });
   }
 
-  getIntentsFromResponders(event) {
+  getActionsFromResponders(event) {
     const responderActionPromises = _.map(this._responders, rspndr =>
       rspndr.handleEvent(event)
     );
@@ -230,25 +227,6 @@ class Core {
         }
       });
   }
-
-  // parseIntents(intents, event) {
-
-  //   let parsedIntents = intents.map(intent => {
-
-  //     intent.toBot = (intent.toBot) ? intent.toBot : event.fromBot;
-  //     intent.targetId = (intent.targetId) ? intent.targetId : event.userId;
-
-  //     // If there was text and action was not defined, assume that
-  //     // intented action was sendMessage
-  //     if (intent.text && !intent.action) {
-  //       intent.action = 'sendMessage';
-  //     }
-
-  //     return intent;
-  //   });
-
-  //   return _.groupBy(parsedIntents, 'toBot');
-  // }
 }
 
 
