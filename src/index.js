@@ -64,7 +64,7 @@ class Core {
 
     // Returns the underlying library so developer can interact
     // with it directly if necessary (setting webhooks etc.)
-    return Promise.resolve(newBot.client);
+    return Promise.resolve(newBot);
 
   }
 
