@@ -67,7 +67,27 @@ class Core {
     return this._availablePlatforms.map(platform => platform.type);
   }
 
-  // TODO: addPlatform() to allow users to implement their own platforms?
+  addPlatfrom(platform) {
+    if (!_.isFunction(platform.onMessage)) {
+      return Promise.reject('Missing required function onMessage()');
+
+    } else if (!_.isFunction(platform.handleActions)) {
+      return Promise.reject('Missing required function handleActions()');
+
+    } else if (_.isUndefined(platform.type)) {
+      return Promise.reject('Platform type is undefined');
+
+    } else if (_.find(this._availablePlatforms.map(oldPlat => oldPlat.type), platform.type)) {
+      return Promise.reject(`Platform with type ${platform.type} already exists`);
+
+    // TODO: Check rest of the error cases (if there is)
+
+    } else {
+      this._availablePlatforms.push(platform);
+      return Promise.resolve(platform);
+    }
+  }
+
 
   addResponder(responderInstance) {
     if (!_.isFunction(responderInstance.handleEvent)) {
