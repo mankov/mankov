@@ -2,6 +2,8 @@
 //
 const Promise = require('bluebird');
 
+const actions = require('../../src/action-creators');
+
 
 class IltaaCommander {
 
@@ -33,10 +35,7 @@ class IltaaCommander {
 
     // Return an "Intent"-object. It can be a single Promise or an array of them
     // (TODO: we need to think about this format)
-    return Promise.resolve({
-      action: 'sendMessage',
-      text: 'Game of Iltuz'
-    });
+    return Promise.resolve(actions.sendMessage(event.meta.targetId, 'Game of Iltuz'));
   }
 
 }
