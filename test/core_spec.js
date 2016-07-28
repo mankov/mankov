@@ -13,23 +13,32 @@ describe('Mankov Core', () => {
 
   before(() => {
     mankov = new Mankov();
+    mankov.createBot('telegram', 'TestBot', { token: 'ASDF-1' });
+    // NOTE: all the tests after this attaches commanders/responders/monitors
+    // to this mankov instance. Their event handling MIGHT collide at some point
+    // so it is something to take care of. Or we could implement clearCommanders()
+    // etc functions to core?
   });
 
   describe('Commanders', () => {
     before(() => {
-      mankov.createBot('telegram', 'TestBot', {token: 'ASDF-1'});
       mankov.addCommander(new IltaaCommander());
     });
 
 
     it('Handles basic /iltaa-command', () => mankov
-      .processEvent(testData.parsedIltaaMessage)
-      .then(intents => {
+      .getActions(testData.parsedIltaaMessage)
+      .then(actions => {
         // NOTE/TODO: this test will be scrapped when functionality is added
-        expect(intents.TestBot[0]).to.containSubset({
-          action: 'sendMessage',
-          text: 'Game of Iltuz',
-          targetId: testData.parsedIltaaMessage.userId
+
+        console.log('actions', actions);
+
+        expect(actions[0]).to.containSubset({
+          type: 'SEND_MESSAGE',
+          payload: {
+            text: 'Game of Iltuz',
+            target: testData.parsedIltaaMessage.userId
+          }
         });
       })
     );

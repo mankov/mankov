@@ -100,52 +100,66 @@ class Core {
 
   // "The start of the Pipeline"
   processEvent(event) {
-    // TODO: call queue
+    // TODO: call queue, make sure that no event is processed twice!
 
     // Send event to all monitors
     this._monitors.forEach(monitor => monitor.handleEvent(event));
 
-    return this.getIntentsFromCommanders(event)
-      .then(commanderIntents => {
-        log.debug('commanderIntents', commanderIntents);
-        console.assert(_.isArray(commanderIntents)); // Remove from production
+    // Send message to "Pipeline"
+    return Promise.resolve()
+      .then(() => this.getActions(event))
+      .then(actions => this.handleActions(actions));
+  }
 
-        if (commanderIntents.length === 0) {
+
+  getActions(event) {
+    return Promise.resolve()
+      .then(() => this.getIntentsFromCommanders(event))
+      .then(commanderActions => {
+        // If only one action is returned, wrap it into array
+        commanderActions = !_.isArray(commanderActions)
+         ? [commanderActions] : commanderActions;
+
+        log.debug('commanderActions', commanderActions);
+        console.assert(_.isArray(commanderActions)); // Remove from production
+
+        if (commanderActions.length > 0) {
+          log.debug('Intents from Commanders!', commanderActions);
+          return commanderActions;
+        } else {
           // No intents from Commanders - check from Responders
           return this.getIntentsFromResponders(event);
-        } else {
-          log.debug('Intents from Commanders!', commanderIntents);
-          return commanderIntents;
         }
-      })
-      .then(intents => {
-        console.assert(_.isArray(intents)); // Remove from production
-
-        // If there was no intents, skip rest of the pipeline
-        if (_.isEmpty(intents)) return Promise.resolve([]);
-
-        log.debug('Got intents', intents);
-
-        // In here we should have an array of "intents".
-        // These intents may have come from Commanders or Responders,
-        // it shouldn't matter at this point.
-        //
-        // (The intents of Responders will have that "priority" thing since all Responders
-        //  will handle all the events, but let's figure out that later)
-        //
-        // In here the Intents should be "cleared" by using whatever bot platform we
-        // currently are using.
-
-        // Returns array of intents grouped by bot names which are going to be used.
-        // It also fills the mandatory intent properties if they were not
-        // defined at where the intent came from.
-        let botActions = this.parseIntents(intents, event);
-
-        // Send actions to bots so they can execute the required actions
-        _.forEach(botActions, (actions, bot) => this._bots[bot].handleActions(actions));
-
-        return Promise.resolve(botActions);
       });
+  }
+
+  handleActions(actions) {
+    // TODO: IMPLEMENT!
+    // -> send the actions to whereever they are going etc
+
+    console.assert(_.isArray(actions)); // Remove from production
+
+    log.debug('Got actions', actions);
+
+
+    // In here we should have an array of "actions".
+    // These actions may have come from Commanders or Responders,
+    // it shouldn't matter at this point.
+    //
+    // (The actions of Responders will have that "priority" thing since all Responders
+    //  will handle all the events, but let's figure out that later)
+    //
+    // In here the actions should be "cleared" by using whatever bot platform we
+    // currently are using.
+
+    // Returns array of actions grouped by bot names which are going to be used.
+    // It also fills the mandatory intent properties if they were not
+    // defined at where the intent came from.
+
+    // Send actions to bots so they can execute the required actions
+    // _.forEach(botActions, (actions, bot) => this._bots[bot].handleActions(actions));
+
+    return actions;
   }
 
   getIntentsFromCommanders(event) {
@@ -184,13 +198,7 @@ class Core {
       // TODO: does the "bid conflict case" need some attention/branch in here?
       if (!_.isNull(winningBid)) {
         // Get intents from the "winning Commander"
-        // Retrun value from commander can be a single Promise or Array of Promises
-        //
-        // TODO/NOTE: is Promise.all required in here? There is always only one
-        // event at time which is given to "winning commander", and from that event
-        // the commander will return 0-n intents. So there is only one Promise to
-        // wait from the commander?
-        return Promise.all(_.flatten([winningBid.commander.handleEvent(event)]));
+        return winningBid.commander.handleEvent(event);
 
       } else {
         // There was no interested from commanders, send empty array to
@@ -223,24 +231,24 @@ class Core {
       });
   }
 
-  parseIntents(intents, event) {
+  // parseIntents(intents, event) {
 
-    let parsedIntents = intents.map(intent => {
+  //   let parsedIntents = intents.map(intent => {
 
-      intent.toBot = (intent.toBot) ? intent.toBot : event.fromBot;
-      intent.targetId = (intent.targetId) ? intent.targetId : event.userId;
+  //     intent.toBot = (intent.toBot) ? intent.toBot : event.fromBot;
+  //     intent.targetId = (intent.targetId) ? intent.targetId : event.userId;
 
-      // If there was text and action was not defined, assume that
-      // intented action was sendMessage
-      if (intent.text && !intent.action) {
-        intent.action = 'sendMessage';
-      }
+  //     // If there was text and action was not defined, assume that
+  //     // intented action was sendMessage
+  //     if (intent.text && !intent.action) {
+  //       intent.action = 'sendMessage';
+  //     }
 
-      return intent;
-    });
+  //     return intent;
+  //   });
 
-    return _.groupBy(parsedIntents, 'toBot');
-  }
+  //   return _.groupBy(parsedIntents, 'toBot');
+  // }
 }
 
 
