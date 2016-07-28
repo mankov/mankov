@@ -154,14 +154,18 @@ class Core {
     // TODO: IMPLEMENT!
     // -> send the actions to whereever they are going etc
 
-    // intent.toBot = (intent.toBot) ? intent.toBot : event.fromBot;
-    // intent.targetId = (intent.targetId) ? intent.targetId : event.userId;
-
-
     console.assert(_.isArray(actions)); // Remove from production
 
     log.debug('Got actions', actions);
 
+    // Fill the missing attributes
+    actions.forEach(action => {
+      action.toBot = (action.toBot) ? action.toBot : event.fromBot;
+      action.targetId = (action.targetId) ? action.targetId : event.userId;
+    });
+
+    // Group actions by their destination bot name
+    let groupedActions = _.groupBy(actions, 'toBot');
 
     // In here we should have an array of "actions".
     // These actions may have come from Commanders or Responders,
@@ -178,7 +182,7 @@ class Core {
     // defined at where the action came from.
 
     // Send actions to bots so they can execute the required actions
-    // _.forEach(botActions, (actions, bot) => this._bots[bot].handleActions(actions));
+    // _.forEach(groupedActions, (actions, bot) => this._bots[bot].handleActions(actions));
 
     return actions;
   }
