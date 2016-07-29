@@ -2,8 +2,8 @@ const expect = require('chai').expect;
 const assert = require('chai').assert;
 
 const tgMock = require('./telegram_mock');
-
 const testData = require('./data/telegram-messages');
+const testProfiles = require('./data/platform-profiles');
 const eventGenerator = require('./event-generator');
 
 const Mankov = require('../src/index');
@@ -12,27 +12,27 @@ const IltaaCommander  = require('./commanders/iltaa-commander');
 const MoroResponder   = require('./responders/moro-responder');
 const logMonitor      = require('./monitors/log-monitor');
 
-const TG_TOKEN = '123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11';
-
 describe('Mankov Core', () => {
   let mankov = null;
   let mock = null;
 
+  afterEach(() => {
+    mankov._commanders = [];
+    mankov._responders = [];
+    mankov._monitors = [];
+    mankov._bots = {};
+  });
+
   before(() => {
     mankov = new Mankov();
-    mock = new tgMock(TG_TOKEN);
-    mankov.createBot('telegram', 'TestBot', { token: TG_TOKEN });
-    // NOTE: all the tests after this attaches commanders/responders/monitors
-    // to this mankov instance. Their event handling MIGHT collide at some point
-    // so it is something to take care of. Or we could implement clearCommanders()
-    // etc functions to core?
+    mock = new tgMock(testProfiles.telegram.options.token);
   });
 
   describe('Commanders', () => {
+
     before(() => {
       mankov.addCommander(new IltaaCommander());
     });
-
 
     it('Handles basic /iltaa-command', () => mankov
       .getActions(testData.parsedIltaaMessage)
@@ -50,6 +50,7 @@ describe('Mankov Core', () => {
 
 
   describe('Responders', () => {
+
     before(() => {
       mankov.addResponder(new MoroResponder(100, 'testimoroprefix'));
     });
@@ -70,9 +71,10 @@ describe('Mankov Core', () => {
 
 
   describe('Comamnders and Responders', () => {
+
     before(() => {
-      // this relies that the IltaaCommander and MoroResponder
-      // are attached to mankov previously
+      mankov.addCommander(new IltaaCommander());
+      mankov.addResponder(new MoroResponder(100, 'testimoroprefix'));
     });
 
     it('Ignores events with no keywords in them', () => mankov
@@ -105,28 +107,21 @@ describe('Mankov Core', () => {
 
   describe('Platforms', () => {
 
-    // Clear platforms before each test
-    beforeEach(() => {
-      mankov._bots = [];
-    });
-
     it('should give available platforms', () => {
       expect(mankov.getAvailablePlatforms()).to.deep.equal(['telegram', 'irc']);
     });
 
     it('should be able to create a Telegram bot', (done) => {
-      // TODO: these could be in a dedicated test file?
-      const name = 'TestTGBot';
-      const options = { token: '123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11' };
+      const profile = testProfiles.telegram;
 
-      mankov.createBot('telegram', name, options)
+      mankov.createBot('telegram', profile.name, profile.options)
       .then((bot) => {
 
-        expect(bot.name).to.equal(name);
+        expect(bot.name).to.equal(profile.name);
         expect(bot.onMessage).to.be.a.function;
 
         // Platform specific asserts
-        expect(bot.client.token).to.equal(options.token);
+        expect(bot.client.token).to.equal(profile.options.token);
 
         done();
       });
@@ -154,23 +149,34 @@ describe('Mankov Core', () => {
     });
 
     it('should not allow to create a bot with same name', () => {
-      const name = 'TestIRCBot';
-      const options = {
-        server: 'http://example.com',
-        nick: 'Mankov'
-      };
+      const profile = testProfiles.irc;
 
       // First time should be ok
-      expect(mankov.createBot('irc', name, options)).eventually.resolved;
+      expect(mankov.createBot('irc', profile.name, profile.options)).eventually.resolved;
 
-      expect(mankov.createBot('irc', name, options)).eventually.rejectedWith(
-        `Bot with name "${name}" has already been created.`
+      expect(mankov.createBot('irc', profile.name, profile.options)).eventually.rejectedWith(
+        `Bot with name "${profile.name}" has already been created.`
       );
     });
 
     it('should reject if platform type was not found', () =>
       expect(mankov.createBot('unknownPlatform', {})).eventually.rejected
     );
+
+    it('should able to emit event to core', () => {
+      const profile = testProfiles.telegram;
+
+      // Create monitor which we use to validate the result
+      let monitor = new logMonitor();
+      mankov.addMonitor(monitor);
+
+      mankov.createBot('telegram', profile.name, profile.options)
+      .then((bot) => {
+        bot.emit('event', testData.parsedIltaaMessage);
+        expect(monitor.lastEvent).to.equal(testData.parsedIltaaMessage);
+      });
+
+    });
 
   });
 
