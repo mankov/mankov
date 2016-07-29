@@ -1,5 +1,6 @@
 const Promise     = require('bluebird');
 const _           = require('lodash');
+const assert      = require('assert');
 
 const EventQueue = require('./event-queue');
 
@@ -156,7 +157,7 @@ class Core {
          ? [commanderActions] : commanderActions;
 
         log.debug('commanderActions', commanderActions);
-        console.assert(_.isArray(commanderActions)); // Remove from production
+        assert(_.isArray(commanderActions)); // Remove from production
 
         if (commanderActions.length > 0) {
           log.debug('Actions from Commanders!', commanderActions);
@@ -172,7 +173,7 @@ class Core {
     // TODO: IMPLEMENT!
     // -> send the actions to whereever they are going etc
 
-    console.assert(_.isArray(actions)); // Remove from production
+    assert(_.isArray(actions)); // Remove from production
 
     log.debug('Got actions', actions);
 
