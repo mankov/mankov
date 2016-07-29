@@ -1,6 +1,8 @@
 const Promise     = require('bluebird');
 const _           = require('lodash');
 
+const EventQueue = require('./event-queue');
+
 const telegramPlatform  = require('./platforms/telegram');
 const ircPlatform       = require('./platforms/irc');
 
@@ -19,6 +21,9 @@ class Core {
       telegramPlatform,
       ircPlatform
     ];
+
+    // Event queue
+    this._queue = new EventQueue();
 
     // The bots (instances of platforms)
     this._bots = {};
@@ -117,10 +122,17 @@ class Core {
 
   // "The start of the Pipeline"
   processEvent(event) {
-    // TODO: call queue, make sure that no event is processed twice!
+    if (this._queue.hasEvent(event.eventId, event.fromBot)) {
+      // this event is already in progress -> do nothing
+      return Promise.resolve();
+    }
 
     // Send event to all monitors
     this._monitors.forEach(monitor => monitor.handleEvent(event));
+
+
+    // Check for possible existing conflict situattions
+    // TODO: implement
 
     // Send message to "Pipeline"
     return Promise.resolve()
