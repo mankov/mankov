@@ -130,18 +130,21 @@ class Core {
     // Check for possible existing conflict situattions
     // TODO: implement
 
+    // Send event to all monitors
+    this.sentEventToMonitors(event);
+
     // Send message to "Pipeline"
     return Promise.resolve()
-      .then(() => this.sentEventToMonitors(event))
       .then(() => this.getActions(event))
-      .then(actions => this.executeActions(actions, event));
+      .then(actions => this.executeActions(actions, event))
+      .catch(e => {
+        log.error('Error occurred on the pipeline: ', e);
+        return Promise.resolve();
+      });
   }
 
   sendEventToMonitors(event) {
     this._monitors.forEach(monitor => monitor.handleEvent(event));
-
-    // Always return resolve
-    return Promise.resolve();
   }
 
   getActions(event) {
