@@ -1,23 +1,25 @@
 // This module keeps track of already handled messages. Since Telegram APi might
 // re-send on startup the message several times, some commands might create
 // duplicates to DB etc
+const _ = require('lodash');
+
 
 class EventQueue {
 
   constructor() {
     this._historySize = 15; // how many message id's will be stored
-    this._history = []; // array of previous messages
+    this._history = {}; // array of previous messages
     this._inProgress = {}; // events currently in "progress"
     this._processedCount = 0; // events succesfully handler
   }
 
   // returns true if event is currently in processing / has been processed
-  hasEvent(eventId) {
-    if (this._history.indexOf(eventId) >= 0) {
+  hasEvent(eventId, botName) {
+    if (_.has(this._history, botName) && this._history[botName].indexOf(eventId) >= 0) {
       // this event has already been processed
       return true;
     }
-    else if (this._inProgress[eventId]) {
+    else if (_.has(this._inProgress, [botName, eventId])) {
       // event is currently in progress
       return true;
     }
@@ -26,21 +28,33 @@ class EventQueue {
     }
   }
 
-  onProcessingStart(eventId) {
-    this._inProgress[eventId] = true;
+  onProcessingStart(eventId, botName) {
+    if (!botName) {
+      throw new Error('No botName specified');
+    }
+
+    _.set(this._inProgress, [botName, eventId], true);
   }
 
-  onProcessingFail(eventId) {
-    delete this._inProgress[eventId];
+  onProcessingFail(eventId, botName) {
+    _.unset(this._inProgress, [botName, eventId]);
   }
 
-  onProcessingFinish(eventId) {
-    delete this._inProgress[eventId];
+  onProcessingFinish(eventId, botName) {
+    // Init bot specific history array if it doesn't exist
+    if (!_.has(this._history, botName)) {
+      this._history[botName] = [];
+    }
 
-    this._history.push(eventId);
+    // Push event to history
+    this._history[botName].push(eventId);
 
-    if (this._history.length > this._historySize) {
-      this._history.shift();
+    // Remove event from progress
+    _.unset(this._inProgress, [botName, eventId]);
+
+    // Pop stuff from history if max length is received
+    if (this._history[botName].length > this._historySize) {
+      this._history[botName].shift();
     }
 
     this._processedCount++;
