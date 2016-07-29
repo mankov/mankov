@@ -14,17 +14,15 @@ module.exports = class IrcPlatform extends BasePlatform {
       options.nick,
       options.optional
     );
+
+    this._client.addListener('message', (from, to, message) => {
+      this.emit('event', this.parseMessage(from, to, message));
+    });
   }
 
   // Get type of the platform without creating an instance
   static get type() {
     return TYPE;
-  }
-
-  onMessage(callback) {
-    this._client.addListener('message', (from, to, message) => {
-      callback(this.parseMessage(from, to, message));
-    });
   }
 
   parseMessage(from, to, msg) {

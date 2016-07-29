@@ -1,7 +1,10 @@
 // This class is responsible of common functions between platforms
 
-module.exports = class BasePlatform {
+const EventEmitter = require('eventemitter3');
+
+module.exports = class BasePlatform extends EventEmitter {
   constructor(name) {
+    super();
     this._name = name;
     this._type = null;
     this._client = null;
@@ -23,9 +26,6 @@ module.exports = class BasePlatform {
   //
   //    static get type()   ->  Returns the type of the platform
   //
-  //    onMessage(callback) ->  Core will call this function to connect incoming
-  //                            messages to the pipeline. Callback has to be called
-  //                            with parsed event as parameter
-  //
+  //    TODO: Add rest of the functions
 
 };

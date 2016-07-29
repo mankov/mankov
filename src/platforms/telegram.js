@@ -18,28 +18,25 @@ module.exports = class TelegramPlatform extends BasePlatform {
     super(name);
     this._type = TYPE;
     this._client = new tgClient(options.token, options.optional);
-  }
-
-  static get type() {
-    return TYPE;
-  }
-
-  onMessage(callback) {
 
     // Receives normal message
     this._client.on('message', (msg) => {
-      callback(this._parseMessage(msg));
+      this.emit('event', this._parseMessage(msg));
     });
 
     // Receives Inline Query
     this._client.on('inline_query', (msg) => {
-      callback(this._parseInlineQuery(msg));
+      this.emit('event', this._parseInlineQuery(msg));
     });
 
     // Receives Chosen Inline Result
     this._client.on('chosen_inline_result', (msg) => {
-      callback(this._parseChosenInlineResult(msg));
+      this.emit('event', this._parseChosenInlineResult(msg));
     });
+  }
+
+  static get type() {
+    return TYPE;
   }
 
   handleActions(actions) {

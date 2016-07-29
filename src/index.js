@@ -59,7 +59,7 @@ class Core {
     this._bots[name] = newBot;
 
     // Subscribe to pipeline
-    newBot.onMessage(event => this.processEvent(event));
+    newBot.on('event', event => this.processEvent(event));
 
     log.info(`Bot "${name}" created from ${type} platform succesfully`);
 
@@ -132,7 +132,7 @@ class Core {
     // TODO: implement
 
     // Send event to all monitors
-    this.sentEventToMonitors(event);
+    this.sendEventToMonitors(event);
 
     // Send message to "Pipeline"
     return Promise.resolve()
