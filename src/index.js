@@ -209,10 +209,8 @@ class Core {
     // (http://stackoverflow.com/questions/30309273/keep-the-values-only-from-the-promises-that-resolve-and-ignore-the-rejected)
     return Promise.all(commandHandlerCandidates.map(promise => promise.reflect()))
     .filter(promise => promise.isFulfilled())
-    // TODO .map i.value() ?
+    .map(promise => promise.value())
     .then(function solveHandlerCommander(handlerBids) {
-      // NOTE: reflect() is used, handlerBids are NOT direct values of the promises
-      // (http://bluebirdjs.com/docs/api/reflect.html)
       let winningBid = null;
 
       if (handlerBids.length > 1) {
@@ -224,11 +222,11 @@ class Core {
         //   will listen for the user's response, and block those messages
         //   from going on. How to do that platform agnostically?)
 
-        winningBid = handlerBids[0].value(); // TODO temp hack
+        winningBid = handlerBids[0]; // TODO temp hack
 
       } else if (handlerBids.length === 1) {
         // Take the only bid we got
-        winningBid = handlerBids[0].value();
+        winningBid = handlerBids[0];
       }
 
       // Do we have a winner or not?
