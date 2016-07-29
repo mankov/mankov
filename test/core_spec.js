@@ -92,10 +92,10 @@ describe('Mankov Core', () => {
       mankov.addMonitor(monitor);
     });
 
-    it('can add a monitor to the core', () => mankov
-      .sendEventToMonitors(testData.parsedIltaaMessage)
-      .then(expect(monitor.lastEvent).to.equal(testData.parsedIltaaMessage))
-    );
+    it('can add a monitor to the core', () => {
+      mankov.sendEventToMonitors(testData.parsedIltaaMessage);
+      expect(monitor.lastEvent).to.equal(testData.parsedIltaaMessage);
+    });
 
     it.skip('should not crash the core even if there was an error', () => {
       // TODO
