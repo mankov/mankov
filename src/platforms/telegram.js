@@ -13,6 +13,8 @@ module.exports = class TelegramPlatform extends BasePlatform {
   // Options is parsed by node-telegram-bot-api, read more from
   // https://github.com/yagop/node-telegram-bot-api#new_TelegramBot_new
   constructor(name, options) {
+    // TODO: token should be mandatory(?)
+
     super(name);
     this._type = TYPE;
     this._client = new tgClient(options.token, options.optional);
@@ -50,7 +52,11 @@ module.exports = class TelegramPlatform extends BasePlatform {
       switch (action.type) {
 
         case ACTION_TYPES.SEND_MESSAGE:
-          clientPromise = this._client.sendMessage(action.payload.target, action.payload.text, action.options);
+          clientPromise = this._client.sendMessage(
+            action.payload.target,
+            action.payload.text,
+            action.options
+          );
           break;
 
         // TODO: Rest of the API
