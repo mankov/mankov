@@ -127,19 +127,22 @@ class Core {
       return Promise.resolve();
     }
 
-    // Send event to all monitors
-    this._monitors.forEach(monitor => monitor.handleEvent(event));
-
-
     // Check for possible existing conflict situattions
     // TODO: implement
 
     // Send message to "Pipeline"
     return Promise.resolve()
+      .then(() => this.sentEventToMonitors(event))
       .then(() => this.getActions(event))
       .then(actions => this.executeActions(actions, event));
   }
 
+  sendEventToMonitors(event) {
+    this._monitors.forEach(monitor => monitor.handleEvent(event));
+
+    // Always return resolve
+    return Promise.resolve();
+  }
 
   getActions(event) {
     return Promise.resolve()
@@ -189,12 +192,8 @@ class Core {
     // In here the actions should be "cleared" by using whatever bot platform we
     // currently are using.
 
-    // Returns array of actions grouped by bot names which are going to be used.
-    // It also fills the mandatory action properties if they were not
-    // defined at where the action came from.
-
     // Send actions to bots so they can execute the required actions
-    // _.forEach(groupedActions, (actions, bot) => this._bots[bot].handleActions(actions));
+    _.forEach(groupedActions, (botActions, bot) => this._bots[bot].handleActions(botActions));
 
     return actions;
   }

@@ -1,6 +1,8 @@
 const expect = require('chai').expect;
 const assert = require('chai').assert;
 
+const tgMock = require('./telegram_mock');
+
 const testData = require('./data/telegram-messages');
 const eventGenerator = require('./event-generator');
 
@@ -10,13 +12,16 @@ const IltaaCommander  = require('./commanders/iltaa-commander');
 const MoroResponder   = require('./responders/moro-responder');
 const logMonitor      = require('./monitors/log-monitor');
 
+const TG_TOKEN = '123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11';
 
 describe('Mankov Core', () => {
   let mankov = null;
+  let mock = null;
 
   before(() => {
     mankov = new Mankov();
-    mankov.createBot('telegram', 'TestBot', { token: 'ASDF-1' });
+    mock = new tgMock(TG_TOKEN);
+    mankov.createBot('telegram', 'TestBot', { token: TG_TOKEN });
     // NOTE: all the tests after this attaches commanders/responders/monitors
     // to this mankov instance. Their event handling MIGHT collide at some point
     // so it is something to take care of. Or we could implement clearCommanders()
@@ -32,7 +37,6 @@ describe('Mankov Core', () => {
     it('Handles basic /iltaa-command', () => mankov
       .getActions(testData.parsedIltaaMessage)
       .then(actions => {
-
         expect(actions[0]).to.containSubset({
           type: 'SEND_MESSAGE',
           payload: {
@@ -89,7 +93,7 @@ describe('Mankov Core', () => {
     });
 
     it('can add a monitor to the core', () => mankov
-      .processEvent(testData.parsedIltaaMessage)
+      .sendEventToMonitors(testData.parsedIltaaMessage)
       .then(expect(monitor.lastEvent).to.equal(testData.parsedIltaaMessage))
     );
 
