@@ -2,7 +2,7 @@
   "name": "mankov",
   "version": "0.0.1",
   "description": "Framework for Chat Bots",
-  "main": "src/server.js",
+  "main": "src/index.js",
   "engine": {
     "node": "6.2.2"
   },
