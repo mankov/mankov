@@ -4,6 +4,8 @@ const log       = require('../logger')(__filename);
 
 const BasePlatform = require('./base');
 
+const ACTION_TYPES = require('../action-types');
+
 const TYPE = 'telegram';
 
 module.exports = class TelegramPlatform extends BasePlatform {
@@ -45,10 +47,10 @@ module.exports = class TelegramPlatform extends BasePlatform {
     _.forEach(actions, action => {
       let clientPromise = null;
 
-      switch (action.name) {
+      switch (action.type) {
 
-        case 'sendMessage':
-          clientPromise = this._client.sendMessage(action.text, action.targetId, action.options);
+        case ACTION_TYPES.SEND_MESSAGE:
+          clientPromise = this._client.sendMessage(action.payload.target, action.payload.text, action.options);
           break;
 
         // TODO: Rest of the API
