@@ -37,36 +37,41 @@ class Core {
 
   createBot(type, name, options) {
 
+    let errMsg = null;
     let chosenPlatform = _.find(this._availablePlatforms, platform => platform.type === type);
 
     // Platform not found
     if (!chosenPlatform) {
-      return Promise.reject(`Platform ${type} not available`);
+      errMsg = `Platform ${type} not available`;
     }
 
     // Invalid name
-    if (!name) {
-      return Promise.reject('Missing parameter "name"');
+    else if (!name) {
+      errMsg = 'Missing parameter "name"';
     }
 
     // Allow only unique names
-    if (this._bots[name]) {
-      return Promise.reject(`Bot with name "${name}" has already been created.`);
+    else if (this._bots[name]) {
+      errMsg = `Bot with name "${name}" has already been created.`;
     }
 
-    // All ok, create bot
-    let newBot = new chosenPlatform(name, options);
-    this._bots[name] = newBot;
+    // There was an error
+    if (errMsg) {
+      return Promise.reject(errMsg);
 
-    // Subscribe to pipeline
-    newBot.on('event', event => this.processEvent(event));
+    // All ok, create a new bot
+    } else {
 
-    log.debug(`Bot "${name}" created from ${type} platform succesfully`);
+      let newBot = new chosenPlatform(name, options);
+      this._bots[name] = newBot;
 
-    // Returns the underlying library so developer can interact
-    // with it directly if necessary (setting webhooks etc.)
-    return Promise.resolve(newBot);
+      // Subscribe to pipeline
+      newBot.on('event', event => this.processEvent(event));
+      log.debug(`Bot "${name}" created from ${type} platform succesfully`);
 
+      return Promise.resolve(newBot);
+
+    }
   }
 
   getAvailablePlatforms() {
@@ -74,19 +79,25 @@ class Core {
   }
 
   addPlatfrom(platform) {
+    let errMsg = null;
+
     if (!_.isFunction(platform.onMessage)) {
-      return Promise.reject('Missing required function onMessage()');
+      errMsg = 'Missing required function onMessage()';
 
     } else if (!_.isFunction(platform.handleActions)) {
-      return Promise.reject('Missing required function handleActions()');
+      errMsg = 'Missing required function handleActions()';
 
     } else if (_.isUndefined(platform.type)) {
-      return Promise.reject('Platform type is undefined');
+      errMsg = 'Platform type is undefined';
 
     } else if (_.find(this._availablePlatforms.map(oldPlat => oldPlat.type), platform.type)) {
-      return Promise.reject(`Platform with type ${platform.type} already exists`);
+      errMsg = `Platform with type ${platform.type} already exists`;
 
-    // TODO: Check rest of the error cases (if there is)
+    }
+    // TODO: Check rest of the error cases (if there is any)
+
+    if (errMsg) {
+      return Promise.reject(errMsg);
 
     } else {
       this._availablePlatforms.push(platform);
@@ -199,6 +210,12 @@ class Core {
   }
 
   getActionsFromCommanders(event) {
+
+    // No commanders set to core, skip
+    if (_.isEmpty(this._commanders)) {
+      return Promise.resolve([]);
+    }
+
     // # Command & Respond -loop
     const commandHandlerCandidates = _.map(this._commanders, cmdr =>
       cmdr.getBidForEvent(event)
@@ -238,12 +255,18 @@ class Core {
       } else {
         // There was no interested from commanders, send empty array to
         // state that there are no actions from commanders
-        return [];
+        return Promise.resolve([]);
       }
     });
   }
 
   getActionsFromResponders(event) {
+
+    // No responders set to core, skip
+    if (_.isEmpty(this._responders)) {
+      return Promise.resolve([]);
+    }
+
     const responderActionPromises = _.map(this._responders, rspndr =>
       rspndr.handleEvent(event)
     );
