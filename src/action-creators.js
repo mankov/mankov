@@ -13,9 +13,9 @@ creator.sendMessage = (text, options = {}) => _.assign(
   { payload: { text, options: options.optional } }
 );
 
-creator.sendImage = (url, options = {}) => _.assign(
-  _baseAction(types.SEND_IMAGE, options.target, options.toBot),
-  { payload: { url, options: options.optional } }
+creator.sendFile = (url, options = {}) => _.assign(
+  _baseAction(types.SEND_FILE, options.target, options.toBot),
+  { payload: { fileType: options.fileType, url, options: options.optional } }
 );
 
 function _baseAction(type, target, toBot) {

@@ -4,6 +4,6 @@
 
 module.exports = {
   SEND_MESSAGE: 'SEND_MESSAGE',
-  SEND_IMAGE: 'SEND_IMAGE'
+  SEND_FILE: 'SEND_FILE'
 };
 

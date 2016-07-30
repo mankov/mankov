@@ -49,10 +49,38 @@ module.exports = class TelegramPlatform extends BasePlatform {
       switch (action.type) {
 
         case ACTION_TYPES.SEND_MESSAGE:
+        case ACTION_TYPES.REPLY_TO_MESSAGE:
           clientPromise = this._client.sendMessage(
             action.target,
             action.payload.text,
             action.payload.options
+          );
+          break;
+
+        case ACTION_TYPES.FORWARD_MESSAGE:
+          clientPromise = this._client.forwardMessage(
+            action.target,
+            action.payload.fromChatId,
+            action.payload.messageId
+          );
+          break;
+
+        case ACTION_TYPES.SEND_FILE:
+          if (_.isFunction(this._client[`send${_.capitalize(action.payload.fileType)}`])) {
+            clientPromise = this._client[`send${_.capitalize(action.payload.fileType)}`](
+              action.target,
+              action.payload.url,
+              action.payload.options
+            );
+          } else {
+            clientPromise = Promise.reject();
+          }
+          break;
+
+        case ACTION_TYPES.SEND_CHAT_ACTION:
+          clientPromise = this._client.sendChatAction(
+            action.target,
+            action.payload.action
           );
           break;
 
