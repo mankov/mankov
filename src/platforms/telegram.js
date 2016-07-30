@@ -114,18 +114,14 @@ module.exports = class TelegramPlatform extends BasePlatform {
     event.meta.userName = msg.from.username;
     event.meta.userFirstName = msg.from.first_name;
     event.meta.userLastName = msg.from.last_name;
-    event.meta.userCallName = _.isUndefined(event.userName) ?
-        event.meta.userFirstName :
-        `@${event.userName}`;
+    event.meta.userCallName = event.meta.userName || event.meta.userFirstName;
 
-    event.meta.isFromGroup = !_.isUndefined(msg.chat.title);
-    event.meta.chatGroupId = event.isFromGroup ? msg.chat.id : null;
-    event.meta.chatGroupTitle = event.isFromGroup ? msg.chat.title : null;
+    event.meta.chatType = msg.chat.type;
+    event.meta.chatId = msg.chat.id; // Can be used as target ID
+    event.meta.chatGroupTitle = msg.chat.title || null;
 
-    event.meta.editDate = (msg.edit_date) ? msg.edit_date : null;
-    event.meta.entities = (msg.entities) ? msg.entities : null;
-
-    event.meta.targetId = (event.isFromGroup) ? event.chatGroupId : event.userId;
+    event.meta.editDate = msg.edit_date || null;
+    event.meta.entities = msg.entities || null;
 
     return event;
 
