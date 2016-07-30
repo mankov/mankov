@@ -61,7 +61,7 @@ class Core {
     // Subscribe to pipeline
     newBot.on('event', event => this.processEvent(event));
 
-    log.info(`Bot "${name}" created from ${type} platform succesfully`);
+    log.debug(`Bot "${name}" created from ${type} platform succesfully`);
 
     // Returns the underlying library so developer can interact
     // with it directly if necessary (setting webhooks etc.)
@@ -156,12 +156,11 @@ class Core {
         commanderActions = !_.isArray(commanderActions)
          ? [commanderActions] : commanderActions;
 
-        log.debug('commanderActions', commanderActions);
         assert(_.isArray(commanderActions)); // Remove from production
 
         if (commanderActions.length > 0) {
-          log.debug('Actions from Commanders!', commanderActions);
           return commanderActions;
+
         } else {
           // No actions from Commanders - ask from Responders
           return this.getActionsFromResponders(event);
@@ -170,22 +169,6 @@ class Core {
   }
 
   executeActions(actions, event) {
-    // TODO: IMPLEMENT!
-    // -> send the actions to whereever they are going etc
-
-    assert(_.isArray(actions)); // Remove from production
-
-    log.debug('Got actions', actions);
-
-    // Fill the missing attributes
-    actions.forEach(action => {
-      action.toBot = (action.toBot) ? action.toBot : event.fromBot;
-      action.targetId = (action.targetId) ? action.targetId : event.userId;
-    });
-
-    // Group actions by their destination bot name
-    let groupedActions = _.groupBy(actions, 'toBot');
-
     // In here we should have an array of "actions".
     // These actions may have come from Commanders or Responders,
     // it shouldn't matter at this point.
@@ -196,8 +179,21 @@ class Core {
     // In here the actions should be "cleared" by using whatever bot platform we
     // currently are using.
 
+    assert(_.isArray(actions)); // Remove from production
+
+    log.debug('Got actions', actions);
+
+    // Fill the missing attributes
+    actions.forEach(action => {
+      action.toBot = action.toBot || event.fromBot; // TODO: How users can decide the bot via actionCreator?
+      action.payload.target = action.payload.target || event.userId;
+    });
+
     // Send actions to bots so they can execute the required actions
-    _.forEach(groupedActions, (botActions, bot) => this._bots[bot].handleActions(botActions));
+    _.forEach(
+      _.groupBy(actions, 'toBot'),
+      (botActions, bot) => this._bots[bot].handleActions(botActions)
+    );
 
     return actions;
   }
