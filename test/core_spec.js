@@ -10,6 +10,8 @@ const Mankov = require('../src/index');
 const actionCreator = require('../src/action-creators');
 const actionTypes = require('../src/action-types');
 
+const telegramPlatform = require('../src/platforms/telegram');
+
 const IltaaCommander  = require('./commanders/iltaa-commander');
 const MoroResponder   = require('./responders/moro-responder');
 const logMonitor      = require('./monitors/log-monitor');
@@ -109,7 +111,7 @@ describe('Mankov Core', () => {
   describe('Platforms', () => {
 
     it('should give available platforms', () => {
-      expect(mankov.getAvailablePlatforms()).to.deep.equal(['telegram', 'irc']);
+      expect(mankov.platforms).to.deep.equal(['telegram', 'irc']);
     });
 
     it('should be able to create a Telegram bot', (done) => {
@@ -177,6 +179,13 @@ describe('Mankov Core', () => {
         expect(monitor.lastEvent).to.equal(testData.parsedIltaaMessage);
       });
 
+    });
+
+    it('should allow user to add own platforms', () => {
+      mankov.addPlatform(telegramPlatform)
+      .then(platform =>
+        expect(platform).to.equal(telegramPlatform)
+      );
     });
 
   });

@@ -74,27 +74,17 @@ module.exports = class Core {
     }
   }
 
-  getAvailablePlatforms() {
+  get platforms() {
     return this._availablePlatforms.map(platform => platform.type);
   }
 
-  addPlatfrom(platform) {
+  addPlatform(platform) {
     let errMsg = null;
 
-    if (!_.isFunction(platform.onMessage)) {
-      errMsg = 'Missing required function onMessage()';
-
-    } else if (!_.isFunction(platform.handleActions)) {
-      errMsg = 'Missing required function handleActions()';
-
-    } else if (_.isUndefined(platform.type)) {
-      errMsg = 'Platform type is undefined';
-
-    } else if (_.find(this._availablePlatforms.map(oldPlat => oldPlat.type), platform.type)) {
-      errMsg = `Platform with type ${platform.type} already exists`;
-
-    }
-    // TODO: Check rest of the error cases (if there is any)
+    // TODO: Test if platform has required functions
+    //       (There is no way to validate the platform directly,
+    //        because it is a constructor function. Maybe create
+    //        an instance and examine it?)
 
     if (errMsg) {
       return Promise.reject(errMsg);
