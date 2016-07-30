@@ -35,7 +35,10 @@ class IltaaCommander {
 
     // Return an "Intent"-object. It can be a single Promise or an array of them
     // (TODO: we need to think about this format)
-    return Promise.resolve(actions.sendMessage(event.meta.targetId, 'Game of Iltuz'));
+    return Promise.resolve(
+      actions.sendMessage('Game of Iltuz')
+    );
+
   }
 
 }

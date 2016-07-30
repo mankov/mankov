@@ -194,11 +194,7 @@ class Core {
 
     log.debug('Got actions', actions);
 
-    // Fill the missing attributes
-    actions.forEach(action => {
-      action.toBot = action.toBot || event.fromBot; // TODO: How users can decide the bot via actionCreator?
-      action.payload.target = action.payload.target || event.userId;
-    });
+    actions = this._validateActions(actions, event);
 
     // Send actions to bots so they can execute the required actions
     _.forEach(
@@ -288,6 +284,20 @@ class Core {
         }
       });
   }
+
+  // Fill the null attributes with default values
+  _validateActions(actions, event) {
+    let validatedActions = [];
+    actions.forEach(action => {
+      action.toBot = action.toBot || event.fromBot;
+      action.target = action.target || event.userId;
+
+      validatedActions.push(action);
+    });
+
+    return validatedActions;
+  }
+
 }
 
 

@@ -50,9 +50,9 @@ module.exports = class TelegramPlatform extends BasePlatform {
 
         case ACTION_TYPES.SEND_MESSAGE:
           clientPromise = this._client.sendMessage(
-            action.payload.target,
+            action.target,
             action.payload.text,
-            action.options
+            action.payload.options
           );
           break;
 

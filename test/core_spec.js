@@ -7,6 +7,8 @@ const testProfiles = require('./data/platform-profiles');
 const eventGenerator = require('./event-generator');
 
 const Mankov = require('../src/index');
+const actionCreator = require('../src/action-creators');
+const actionTypes = require('../src/action-types');
 
 const IltaaCommander  = require('./commanders/iltaa-commander');
 const MoroResponder   = require('./responders/moro-responder');
@@ -40,8 +42,7 @@ describe('Mankov Core', () => {
         expect(actions[0]).to.containSubset({
           type: 'SEND_MESSAGE',
           payload: {
-            text: 'Game of Iltuz',
-            target: testData.parsedIltaaMessage.userId
+            text: 'Game of Iltuz'
           }
         });
       })
@@ -174,6 +175,38 @@ describe('Mankov Core', () => {
       .then((bot) => {
         bot.emit('event', testData.parsedIltaaMessage);
         expect(monitor.lastEvent).to.equal(testData.parsedIltaaMessage);
+      });
+
+    });
+
+  });
+
+  describe('Actions', () => {
+
+    let action = null;
+
+    before(() => {
+      action = actionCreator.sendMessage('Test message');
+    });
+
+    it('should have the required attributes', () => {
+      expect(action).to.have.all.keys(
+        'type',
+        'target',
+        'toBot',
+        'payload'
+      );
+    });
+
+    it('should fill the null attributes before sending actions to bots', () => {
+      let validatedAction = mankov._validateActions([action], testData.parsedIltaaMessage)[0];
+      expect(validatedAction).to.containSubset({
+        type: actionTypes.SEND_MESSAGE,
+        target: testData.parsedIltaaMessage.userId,
+        toBot: testData.parsedIltaaMessage.fromBot,
+        payload: {
+          text: 'Test message'
+        }
       });
 
     });
