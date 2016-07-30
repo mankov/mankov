@@ -4,7 +4,7 @@
 const _ = require('lodash');
 
 
-class EventQueue {
+module.exports = class EventQueue {
 
   constructor() {
     this._historySize = 15; // how many message id's will be stored
@@ -63,7 +63,5 @@ class EventQueue {
   getProcessedCount() {
     return this._processedCount;
   }
-}
 
-
-module.exports = EventQueue;
+};

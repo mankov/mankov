@@ -5,7 +5,7 @@ const Promise = require('bluebird');
 const actions = require('../../src/action-creators');
 
 
-class IltaaCommander {
+module.exports = class IltaaCommander {
 
   constructor() {
     this._iltaaCount = 0;
@@ -41,6 +41,4 @@ class IltaaCommander {
 
   }
 
-}
-
-module.exports = IltaaCommander;
+};

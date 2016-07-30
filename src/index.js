@@ -10,7 +10,7 @@ const ircPlatform       = require('./platforms/irc');
 const log = require('./logger')(__filename);
 
 
-class Core {
+module.exports = class Core {
   constructor() {
     // The handlers
     this._monitors = [];
@@ -299,6 +299,3 @@ class Core {
   }
 
 }
-
-
-module.exports = Core;
