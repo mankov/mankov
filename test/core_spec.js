@@ -181,15 +181,10 @@ describe('Mankov Core', () => {
 
   });
 
-  describe('Actions', () => {
-
-    let action = null;
-
-    before(() => {
-      action = actionCreator.sendMessage('Test message');
-    });
+  describe('Action creator / Actions', () => {
 
     it('should have the required attributes', () => {
+      let action = actionCreator.sendMessage('Test message');
       expect(action).to.have.all.keys(
         'type',
         'target',
@@ -198,7 +193,26 @@ describe('Mankov Core', () => {
       );
     });
 
+    it('should allow to set target, destination bot and optional options', () => {
+      let action = actionCreator.sendMessage('Test message', {
+        target: 123456,
+        toBot: 'someRandomBot',
+        optional: { special: 'value' }
+      });
+
+      expect(action).to.containSubset({
+        type: actionTypes.SEND_MESSAGE,
+        target: 123456,
+        toBot: 'someRandomBot',
+        payload: {
+          text: 'Test message',
+          options: { special: 'value' }
+        }
+      });
+    });
+
     it('should fill the null attributes before sending actions to bots', () => {
+      let action = actionCreator.sendMessage('Test message');
       let validatedAction = mankov._validateActions([action], testData.parsedIltaaMessage)[0];
       expect(validatedAction).to.containSubset({
         type: actionTypes.SEND_MESSAGE,
