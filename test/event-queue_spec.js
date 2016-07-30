@@ -33,7 +33,7 @@ describe('EventQueue', () => {
   });
 
   it('Failed event does not increase processed count', () => {
-    assert(queue.getProcessedCount() === 0);
+    assert(queue.processedCount === 0);
   });
 
   it('Processed event is added to history', () => {

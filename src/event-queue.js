@@ -60,7 +60,7 @@ module.exports = class EventQueue {
     this._processedCount++;
   }
 
-  getProcessedCount() {
+  get processedCount() {
     return this._processedCount;
   }
 
