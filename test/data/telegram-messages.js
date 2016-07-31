@@ -33,16 +33,19 @@ data.parsedIltaaMessage = {
   text: '/iltaa',
   userId: 1337,
   meta: {
+    type: 'message',
+    chatId: 1337,
+    chatType: 'private',
     replyToMessage: undefined,
     userName: 'ncmpl',
     userFirstName: 'Foo',
     userLastName: 'Bar',
-    userCallName: 'Foo',
-    isFromGroup: false,
-    chatGroupId: null,
+    userCallName: 'ncmpl',
     chatGroupTitle: null,
     editDate: null,
-    targetId: 1337
+    entities: [
+      { type: 'bot_command', offset: 0, length: 6 }
+    ]
   }
 };
 
