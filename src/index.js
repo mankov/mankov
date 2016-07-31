@@ -267,8 +267,6 @@ module.exports = class Core {
 
     assert(_.isArray(actions)); // Remove from production
 
-    log.debug('Got actions', actions);
-    console.log(actions);
 
     const validatedActions = _.map(actions, action => {
       action.toBot = action.toBot || event.fromBot;
@@ -277,11 +275,13 @@ module.exports = class Core {
       return action;
     });
 
+    log.debug('Got actions', validatedActions);
+
     // Send actions to bots so they can execute the required actions
-    _.forEach(
-      _.groupBy(validatedActions, 'toBot'),
-      (botActions, bot) => this._bots[bot].handleActions(botActions)
-    );
+    _.chain(validatedActions)
+      .groupBy('toBot')
+      .forEach((botActions, botName) => this._bots[botName].handleActions(botActions))
+      .value();
 
     return actions;
   }
