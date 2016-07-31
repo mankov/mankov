@@ -270,28 +270,20 @@ module.exports = class Core {
     log.debug('Got actions', actions);
     console.log(actions);
 
-    actions = this._validateActions(actions, event);
+    const validatedActions = _.map(actions, action => {
+      action.toBot = action.toBot || event.fromBot;
+      action.target = action.target || event.userId;
+
+      return action;
+    });
 
     // Send actions to bots so they can execute the required actions
     _.forEach(
-      _.groupBy(actions, 'toBot'),
+      _.groupBy(validatedActions, 'toBot'),
       (botActions, bot) => this._bots[bot].handleActions(botActions)
     );
 
     return actions;
-  }
-
-  // Fill the null attributes with default values
-  _validateActions(actions, event) {
-    let validatedActions = [];
-    actions.forEach(action => {
-      action.toBot = action.toBot || event.fromBot;
-      action.target = action.target || event.userId;
-
-      validatedActions.push(action);
-    });
-
-    return validatedActions;
   }
 
 };
