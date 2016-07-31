@@ -35,8 +35,10 @@ module.exports = class Core {
     return new Core();
   }
 
-  createBot(type, name, options) {
 
+  // # Mankov instance related -------------------------------------
+  //
+  createBot(type, name, options) {
     let errMsg = null;
     let chosenPlatform = _.find(this._availablePlatforms, platform => platform.type === type);
 
@@ -95,15 +97,6 @@ module.exports = class Core {
     }
   }
 
-
-  addResponder(responderInstance) {
-    if (!_.isFunction(responderInstance.handleEvent)) {
-      log.error(`No handleEvent defined for ${responderInstance.constructor.name} ignoring!`);
-    } else {
-      this._responders.push(responderInstance);
-    }
-  }
-
   addCommander(commanderInstance) {
     if (!_.isFunction(commanderInstance.getBidForEvent)) {
       log.error(`No getBidForEvent defined for ${commanderInstance.constructor.name}!`);
@@ -122,7 +115,19 @@ module.exports = class Core {
     }
   }
 
-  // "The start of the Pipeline"
+  addResponder(responderInstance) {
+    if (!_.isFunction(responderInstance.handleEvent)) {
+      log.error(`No handleEvent defined for ${responderInstance.constructor.name} ignoring!`);
+    } else {
+      this._responders.push(responderInstance);
+    }
+  }
+
+
+  // # Pipeline related --------------------------------------
+  //
+
+  // ## The start
   processEvent(event) {
     if (this._queue.hasEvent(event.eventId, event.fromBot)) {
       // this event is already in progress -> do nothing
@@ -167,32 +172,6 @@ module.exports = class Core {
           return this.getActionsFromResponders(event);
         }
       });
-  }
-
-  executeActions(actions, event) {
-    // In here we should have an array of "actions".
-    // These actions may have come from Commanders or Responders,
-    // it shouldn't matter at this point.
-    //
-    // (The actions of Responders will have that "priority" thing since all Responders
-    //  will handle all the events, but let's figure out that later)
-    //
-    // In here the actions should be "cleared" by using whatever bot platform we
-    // currently are using.
-
-    assert(_.isArray(actions)); // Remove from production
-
-    log.debug('Got actions', actions);
-
-    actions = this._validateActions(actions, event);
-
-    // Send actions to bots so they can execute the required actions
-    _.forEach(
-      _.groupBy(actions, 'toBot'),
-      (botActions, bot) => this._bots[bot].handleActions(botActions)
-    );
-
-    return actions;
   }
 
   getActionsFromCommanders(event) {
@@ -275,6 +254,33 @@ module.exports = class Core {
       });
   }
 
+  executeActions(actions, event) {
+    // In here we should have an array of "actions".
+    // These actions may have come from Commanders or Responders,
+    // it shouldn't matter at this point.
+    //
+    // (The actions of Responders will have that "priority" thing since all Responders
+    //  will handle all the events, but let's figure out that later)
+    //
+    // In here the actions should be "cleared" by using whatever bot platform we
+    // currently are using.
+
+    assert(_.isArray(actions)); // Remove from production
+
+    log.debug('Got actions', actions);
+    console.log(actions);
+
+    actions = this._validateActions(actions, event);
+
+    // Send actions to bots so they can execute the required actions
+    _.forEach(
+      _.groupBy(actions, 'toBot'),
+      (botActions, bot) => this._bots[bot].handleActions(botActions)
+    );
+
+    return actions;
+  }
+
   // Fill the null attributes with default values
   _validateActions(actions, event) {
     let validatedActions = [];
@@ -288,4 +294,4 @@ module.exports = class Core {
     return validatedActions;
   }
 
-}
+};
