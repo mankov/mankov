@@ -13,6 +13,7 @@ const log = require('./logger')(__filename);
 module.exports = class Core {
   constructor() {
     // The handlers
+    this._middlewares = [];
     this._monitors = [];
     this._commanders = [];
     this._responders = [];
@@ -49,30 +50,28 @@ module.exports = class Core {
 
     // Invalid name
     else if (!name) {
-      errMsg = 'Missing parameter "name"';
+      errMsg += 'Missing parameter "name"';
     }
 
     // Allow only unique names
     else if (this._bots[name]) {
-      errMsg = `Bot with name "${name}" has already been created.`;
+      errMsg += `Bot with name "${name}" has already been created.`;
     }
 
     // There was an error
     if (errMsg) {
       return Promise.reject(errMsg);
-
-    // All ok, create a new bot
     } else {
+      // All ok, create a new bot
 
       let newBot = new chosenPlatform(name, options);
       this._bots[name] = newBot;
 
       // Subscribe to pipeline
       newBot.on('event', event => this.processEvent(event));
-      log.debug(`Bot "${name}" created from ${type} platform succesfully`);
 
+      log.debug(`Bot "${name}" created to ${type} platform succesfully`);
       return Promise.resolve(newBot);
-
     }
   }
 
@@ -94,6 +93,14 @@ module.exports = class Core {
     } else {
       this._availablePlatforms.push(platform);
       return Promise.resolve(platform);
+    }
+  }
+
+  addMiddleware(middlewareInstance) {
+    if (!_.isFunction(middlewareInstance.transformEvent)) {
+      log.error(`No transformEvent for ${middlewareInstance.constructor.name}, ignoring!`);
+    } else {
+      this._middlewares.push(middlewareInstance);
     }
   }
 
@@ -128,30 +135,48 @@ module.exports = class Core {
   //
 
   // ## The start
-  processEvent(event) {
-    if (this._queue.hasEvent(event.eventId, event.fromBot)) {
-      // this event is already in progress -> do nothing
+  processEvent(originalEvent) {
+    if (this._queue.hasEvent(originalEvent.eventId, originalEvent.fromBot)) {
+      // this event is already in progress/has already been handler -> do nothing
       return Promise.resolve();
+    } else {
+      this._queue.onProcessingStart(originalEvent.eventId, originalEvent.fromBot);
     }
 
-    // Check for possible existing conflict situattions
+
+    // Check for possible existing conflict situations
     // TODO: implement
 
-    // Send event to all monitors
-    this.sendEventToMonitors(event);
 
     // Send message to "Pipeline"
-    return Promise.resolve()
-      .then(() => this.getActions(event))
-      .then(actions => this.executeActions(actions, event))
-      .catch(e => {
-        log.error('Error occurred on the pipeline: ', e);
-        return Promise.resolve();
+    return this.applyMiddlewares(originalEvent)
+      .then(event => {
+        // Send event to all monitors
+        this.sendEventToMonitors(event);
+
+        // Get actions from Commanders/Responders
+        return Promise.resolve()
+          .then(() => this.getActions(event))
+          .then(actions => this.executeActions(actions, event)) // Execute actions
+          .then(() => this._queue.onProcessingFinish(event.eventId, event.fromBot))
+          .catch(e => {
+            log.error('Error occurred on the pipeline: ', e);
+
+            this._queue.onProcessingFail(event.eventId, event.fromBot);
+            return Promise.resolve();
+          });
       });
+  }
+
+  applyMiddlewares(originalEvent) {
+    return Promise.reduce(this._middlewares, (resultEvent, middleware) =>
+        middleware.transformEvent(resultEvent),
+    originalEvent);
   }
 
   sendEventToMonitors(event) {
     this._monitors.forEach(monitor => monitor.handleEvent(event));
+    return Promise.resolve(event);
   }
 
   getActions(event) {
