@@ -4,6 +4,7 @@
   "description": "Framework for Chat Bots",
   "main": "src/index.js",
   "files": [
+    "src/",
     "/action-creators.js"
   ],
   "engine": {
