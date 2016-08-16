@@ -107,8 +107,6 @@ module.exports = class Core {
   addCommander(commanderInstance) {
     if (!_.isFunction(commanderInstance.getBidForEvent)) {
       log.error(`No getBidForEvent defined for ${commanderInstance.constructor.name}!`);
-    } else if (!_.isFunction(commanderInstance.handleEvent)) {
-      log.error(`No handleEvent defined for ${commanderInstance.constructor.name} ignoring!`);
     } else {
       this._commanders.push(commanderInstance);
     }
@@ -123,8 +121,8 @@ module.exports = class Core {
   }
 
   addResponder(responderInstance) {
-    if (!_.isFunction(responderInstance.handleEvent)) {
-      log.error(`No handleEvent defined for ${responderInstance.constructor.name} ignoring!`);
+    if (!_.isFunction(responderInstance.getBidForEvent)) {
+      log.error(`No getBidForEvent defined for ${responderInstance.constructor.name} ignoring!`);
     } else {
       this._responders.push(responderInstance);
     }
@@ -207,8 +205,10 @@ module.exports = class Core {
     }
 
     // # Command & Respond -loop
-    const commandHandlerCandidates = _.map(this._commanders, cmdr =>
-      cmdr.getBidForEvent(event)
+    const commandHandlerCandidates = _.flatten(
+      _.map(this._commanders, cmdr =>
+        cmdr.getBidForEvent(event)
+      )
     );
 
     // Hack to get only solved promises
@@ -240,7 +240,7 @@ module.exports = class Core {
       // TODO: does the "bid conflict case" need some attention/branch in here?
       if (!_.isNull(winningBid)) {
         // Get actions from the "winning Commander"
-        return winningBid.commander.handleEvent(event);
+        return winningBid.handleEvent(event);
 
       } else {
         // There was no interested from commanders, send empty array to
@@ -257,8 +257,10 @@ module.exports = class Core {
       return Promise.resolve([]);
     }
 
-    const responderActionPromises = _.map(this._responders, rspndr =>
-      rspndr.handleEvent(event)
+    const responderActionPromises = _.flatten(
+      _.map(this._responders, rspndr =>
+        rspndr.getBidForEvent(event)
+      )
     );
 
     return Promise.all(responderActionPromises.map(promise => promise.reflect()))
@@ -272,7 +274,8 @@ module.exports = class Core {
         //
         // For now we just select the first one.
         if (_.isArray(responderActionCandidates) && responderActionCandidates.length > 0) {
-          return Promise.resolve(responderActionCandidates[0]);
+
+          return Promise.resolve(responderActionCandidates[0].handleEvent(event));
         } else {
           return Promise.resolve([]);
         }

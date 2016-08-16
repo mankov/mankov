@@ -61,6 +61,7 @@ describe('Mankov Core', () => {
     it('Responds to message with a keyword', () => mankov
       .getActions(eventGenerator.textEvent('juuh moro nääs'))
       .then(actions => {
+
         expect(actions).to.be.an.array;
         expect(actions).to.have.length(1);
 
@@ -83,6 +84,7 @@ describe('Mankov Core', () => {
     it('Ignores events with no keywords in them', () => mankov
       .getActions(eventGenerator.textEvent('no keywords in it'))
       .then(actions => {
+
         expect(actions).to.be.an.array;
         expect(actions.length).to.equal(0);
       })
@@ -166,7 +168,7 @@ describe('Mankov Core', () => {
       expect(mankov.createBot('unknownPlatform', {})).eventually.rejected
     );
 
-    it('should able to emit event to core', () => {
+    it('should able to emit event to core', (done) => {
       const profile = testProfiles.telegram;
 
       // Create monitor which we use to validate the result
@@ -176,7 +178,12 @@ describe('Mankov Core', () => {
       mankov.createBot('telegram', profile.name, profile.options)
       .then((bot) => {
         bot.emit('event', testData.parsedIltaaMessage);
-        expect(monitor.lastEvent).to.equal(testData.parsedIltaaMessage);
+
+        // Wait a bit so emit will have effect
+        setTimeout(() => {
+          expect(monitor.lastEvent).to.equal(testData.parsedIltaaMessage);
+          done();
+        }, 10);
       });
 
     });
