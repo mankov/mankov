@@ -14,8 +14,7 @@ module.exports = class IltaaCommander extends handlerBase {
 
     this.handlers = [
       {
-        intrested: (event) => (this.hasIltaa(event) ?
-          Promise.resolve() : Promise.reject()),
+        intrested: this.hasIltaa,
 
         description: 'Iltuilee käyttäjälle',
 
@@ -33,7 +32,8 @@ module.exports = class IltaaCommander extends handlerBase {
   }
 
   hasIltaa(event) {
-    return event.text.toLowerCase().indexOf('/iltaa') >= 0;
+    return (event.text.toLowerCase().indexOf('/iltaa') >= 0) ?
+      Promise.resolve() : Promise.reject();
   }
 
 };

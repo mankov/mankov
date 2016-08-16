@@ -13,6 +13,7 @@ const actionTypes = require('../src/action-types');
 const telegramPlatform = require('../src/platforms/telegram');
 
 const IltaaCommander  = require('./commanders/iltaa-commander');
+const MultiCommander  = require('./commanders/multi-commander');
 const MoroResponder   = require('./responders/moro-responder');
 const logMonitor      = require('./monitors/log-monitor');
 
@@ -34,21 +35,52 @@ describe('Mankov Core', () => {
 
   describe('Commanders', () => {
 
-    before(() => {
-      mankov.addCommander(new IltaaCommander());
+    describe('With single intrest', () => {
+
+      before(() => {
+        mankov.addCommander(new IltaaCommander());
+      });
+
+      it('Handles basic /iltaa-command', (done) => mankov
+        .getActions(testData.parsedIltaaMessage)
+        .then(actions => {
+          expect(actions[0]).to.containSubset({
+            type: 'SEND_MESSAGE',
+            payload: {
+              text: 'Game of Iltuz'
+            }
+          });
+          done();
+        })
+      );
     });
 
-    it('Handles basic /iltaa-command', () => mankov
-      .getActions(testData.parsedIltaaMessage)
-      .then(actions => {
-        expect(actions[0]).to.containSubset({
-          type: 'SEND_MESSAGE',
-          payload: {
-            text: 'Game of Iltuz'
-          }
-        });
-      })
-    );
+    describe('With multiple intrests', () => {
+
+      before(() => {
+        mankov.addCommander(new MultiCommander());
+      });
+
+      it('Which will give a "yes"-bid and a "no"-bid', (done) => mankov
+        .getActions(testData.parsedIltaaMessage)
+        .then(actions => {
+          expect(actions).to.have.length(1);
+          expect(actions[0]).to.containSubset({
+            type: 'SEND_MESSAGE',
+            payload: {
+              text: 'You are interesting!'
+            }
+          });
+          done();
+        })
+      );
+
+      it.skip('Which will give two yes bids', () => {
+        // TODO: This is the conflict situation, do these tests
+        //       after we figure out how to solve conflicts
+      });
+    });
+
   });
 
 
@@ -58,7 +90,7 @@ describe('Mankov Core', () => {
       mankov.addResponder(new MoroResponder(100, 'testimoroprefix'));
     });
 
-    it('Responds to message with a keyword', () => mankov
+    it('Responds to message with a keyword', (done) => mankov
       .getActions(eventGenerator.textEvent('juuh moro nääs'))
       .then(actions => {
 
@@ -69,6 +101,7 @@ describe('Mankov Core', () => {
           actions[0].payload.text.indexOf('testimoroprefix') >= 0,
           'prefix should´ve been added to end of response action text'
         );
+        done();
       })
     );
   });
@@ -81,12 +114,13 @@ describe('Mankov Core', () => {
       mankov.addResponder(new MoroResponder(100, 'testimoroprefix'));
     });
 
-    it('Ignores events with no keywords in them', () => mankov
+    it('Ignores events with no keywords in them', (done) => mankov
       .getActions(eventGenerator.textEvent('no keywords in it'))
       .then(actions => {
 
         expect(actions).to.be.an.array;
         expect(actions.length).to.equal(0);
+        done();
       })
     );
   });
@@ -188,10 +222,12 @@ describe('Mankov Core', () => {
 
     });
 
-    it('should allow user to add own platforms', () => {
+    it('should allow user to add own platforms', (done) => {
       mankov.addPlatform(telegramPlatform)
-      .then(platform =>
-        expect(platform).to.equal(telegramPlatform)
+      .then(platform => {
+        expect(platform).to.equal(telegramPlatform);
+        done();
+      }
       );
     });
 

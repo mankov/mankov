@@ -1,9 +1,13 @@
 const _       = require('lodash');
 const Promise = require('bluebird');
 
-module.exports = class baseCommander {
+module.exports = class eventHandlerBase {
   constructor() {
     this._handlers = [];
+  }
+
+  get handlers() {
+    return this._handlers;
   }
 
   set handlers(newHandlers) {

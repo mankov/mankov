@@ -228,7 +228,6 @@ module.exports = class Core {
         //   will listen for the user's response, and block those messages
         //   from going on. How to do that platform agnostically?)
         log.error('Got more bids from commanders than one, fallbacking to the first one');
-
         winningBid = handlerBids[0]; // TODO temp hack
 
       } else if (handlerBids.length === 1) {
