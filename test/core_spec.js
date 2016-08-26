@@ -41,7 +41,7 @@ describe('Mankov Core', () => {
         mankov.addCommander(new IltaaCommander());
       });
 
-      it('Handles basic /iltaa-command', (done) => mankov
+      it('handles basic /iltaa-command', (done) => mankov
         .getActions(testData.parsedIltaaMessage)
         .then(actions => {
           expect(actions[0]).to.containSubset({
@@ -53,6 +53,16 @@ describe('Mankov Core', () => {
           done();
         })
       );
+
+      it('would give zero actions if commander was not interested', (done) => mankov
+        .getActions(testData.parsedRandomNoiseMessage)
+        .then(actions => {
+          expect(actions).to.be.an.array;
+          expect(actions).to.have.length(0);
+          done();
+        })
+      );
+
     });
 
     describe('With multiple intrests', () => {
@@ -61,7 +71,7 @@ describe('Mankov Core', () => {
         mankov.addCommander(new MultiCommander());
       });
 
-      it('Which will give a "yes"-bid and a "no"-bid', (done) => mankov
+      it('which will give a one bid', (done) => mankov
         .getActions(testData.parsedIltaaMessage)
         .then(actions => {
           expect(actions).to.have.length(1);
@@ -75,7 +85,7 @@ describe('Mankov Core', () => {
         })
       );
 
-      it.skip('Which will give two yes bids', () => {
+      it.skip('which will give two bids', () => {
         // TODO: This is the conflict situation, do these tests
         //       after we figure out how to solve conflicts
       });
@@ -90,7 +100,7 @@ describe('Mankov Core', () => {
       mankov.addResponder(new MoroResponder(100, 'testimoroprefix'));
     });
 
-    it('Responds to message with a keyword', (done) => mankov
+    it('responds to message with a keyword', (done) => mankov
       .getActions(eventGenerator.textEvent('juuh moro nääs'))
       .then(actions => {
 
@@ -114,7 +124,7 @@ describe('Mankov Core', () => {
       mankov.addResponder(new MoroResponder(100, 'testimoroprefix'));
     });
 
-    it('Ignores events with no keywords in them', (done) => mankov
+    it('ignores events with no keywords in them', (done) => mankov
       .getActions(eventGenerator.textEvent('no keywords in it'))
       .then(actions => {
 

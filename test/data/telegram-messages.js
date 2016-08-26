@@ -49,5 +49,28 @@ data.parsedIltaaMessage = {
   }
 };
 
+data.parsedRandomNoiseMessage = {
+  origin: 'telegram',
+  fromBot: 'TestBot',
+  eventId: 9527,
+  text: 'random noise',
+  userId: 1337,
+  meta: {
+    type: 'message',
+    chatId: 1337,
+    chatType: 'group',
+    replyToMessage: undefined,
+    userName: 'ncmpl',
+    userFirstName: 'Foo',
+    userLastName: 'Bar',
+    userCallName: 'ncmpl',
+    chatGroupTitle: null,
+    editDate: null,
+    entities: [
+      { type: 'bot_command', offset: 0, length: 6 }
+    ]
+  }
+};
+
 
 module.exports = data;
